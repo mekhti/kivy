@@ -44,9 +44,7 @@ class ImageLoaderPIL(ImageLoaderBase):
 
     @staticmethod
     def can_save(fmt, is_bytesio):
-        if is_bytesio:
-            return False
-        return fmt in ImageLoaderPIL.extensions()
+        return False if is_bytesio else fmt in ImageLoaderPIL.extensions()
 
     @staticmethod
     def can_load_memory():
@@ -67,8 +65,9 @@ class ImageLoaderPIL(ImageLoaderBase):
                 imc = _img_tmp.convert('RGBA')
             except:
                 Logger.warning(
-                    'Image: Unable to convert image to rgba (was %s)' %
-                    (_img_tmp.mode.lower()))
+                    f'Image: Unable to convert image to rgba (was {_img_tmp.mode.lower()})'
+                )
+
                 raise
             _img_tmp = imc
 
@@ -101,7 +100,7 @@ class ImageLoaderPIL(ImageLoaderBase):
         try:
             im = PILImage.open(filename)
         except:
-            Logger.warning('Image: Unable to load image <%s>' % filename)
+            Logger.warning(f'Image: Unable to load image <{filename}>')
             raise
         # update internals
         if not self._inline:

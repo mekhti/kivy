@@ -101,15 +101,14 @@ class UrlExample(App):
         headers = req.resp_headers
         content_type = headers.get('content-type', headers.get('Content-Type'))
         if content_type.startswith('image/'):
-            fn = 'tmpfile.{}'.format(content_type.split('/')[1])
+            fn = f"tmpfile.{content_type.split('/')[1]}"
             with open(fn, 'wb') as f:
                 f.write(result)
             self.result_image = fn
+        elif isinstance(result, dict):
+            self.result_text = json.dumps(result, indent=2)
         else:
-            if isinstance(result, dict):
-                self.result_text = json.dumps(result, indent=2)
-            else:
-                self.result_text = result
+            self.result_text = result
         self.status = req.resp_status
         self.headers = headers
 

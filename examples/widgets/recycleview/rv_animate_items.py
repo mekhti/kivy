@@ -75,9 +75,10 @@ class Application(App):
 
     def build(self):
         self.data = [
-            {'index': i, 'text': 'hello {}'.format(i), 'animation_proxy': None}
+            {'index': i, 'text': f'hello {i}', 'animation_proxy': None}
             for i in range(1000)
         ]
+
         return Builder.load_string(KV)
 
     # the triggered decorator allows delaying the animation until after the

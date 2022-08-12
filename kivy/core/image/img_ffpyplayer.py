@@ -2,6 +2,7 @@
 FFPyPlayer: FFmpeg based image loader
 '''
 
+
 __all__ = ('ImageLoaderFFPy', )
 
 import ffpyplayer
@@ -12,7 +13,7 @@ from kivy.logger import Logger
 from kivy.core.image import ImageLoaderBase, ImageData, ImageLoader
 
 
-Logger.info('ImageLoaderFFPy: Using ffpyplayer {}'.format(ffpyplayer.version))
+Logger.info(f'ImageLoaderFFPy: Using ffpyplayer {ffpyplayer.version}')
 
 
 logger_func = {'quiet': Logger.critical, 'panic': Logger.critical,
@@ -22,9 +23,8 @@ logger_func = {'quiet': Logger.critical, 'panic': Logger.critical,
 
 
 def _log_callback(message, level):
-    message = message.strip()
-    if message:
-        logger_func[level]('ffpyplayer: {}'.format(message))
+    if message := message.strip():
+        logger_func[level](f'ffpyplayer: {message}')
 
 
 if not get_log_callback():
@@ -54,7 +54,7 @@ class ImageLoaderFFPy(ImageLoaderBase):
         try:
             loader = ffImageLoader(filename)
         except:
-            Logger.warning('Image: Unable to load image <%s>' % filename)
+            Logger.warning(f'Image: Unable to load image <{filename}>')
             raise
 
         # update internals
@@ -67,11 +67,11 @@ class ImageLoaderFFPy(ImageLoaderBase):
                 break
             images.append(frame)
         if not len(images):
-            raise Exception('No image found in {}'.format(filename))
+            raise Exception(f'No image found in {filename}')
 
         w, h = images[0].get_size()
         ifmt = images[0].get_pixel_format()
-        if ifmt != 'rgba' and ifmt != 'rgb24':
+        if ifmt not in ['rgba', 'rgb24']:
             fmt = 'rgba'
             sws = SWScale(w, h, ifmt, ofmt=fmt)
             for i, image in enumerate(images):

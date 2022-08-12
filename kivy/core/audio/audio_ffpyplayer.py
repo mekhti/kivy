@@ -43,6 +43,7 @@ Finally, before running you need to ensure that ffpyplayer is in python's path.
     kivy exits by setting it to None.
 '''
 
+
 __all__ = ('SoundFFPy', )
 
 try:
@@ -60,10 +61,9 @@ from kivy.weakmethod import WeakMethod
 import time
 
 try:
-    Logger.info(
-        'SoundFFPy: Using ffpyplayer {}'.format(ffpyplayer.__version__))
+    Logger.info(f'SoundFFPy: Using ffpyplayer {ffpyplayer.__version__}')
 except:
-    Logger.info('SoundFFPy: Using ffpyplayer {}'.format(ffpyplayer.version))
+    Logger.info(f'SoundFFPy: Using ffpyplayer {ffpyplayer.version}')
 
 
 logger_func = {'quiet': Logger.critical, 'panic': Logger.critical,
@@ -73,9 +73,8 @@ logger_func = {'quiet': Logger.critical, 'panic': Logger.critical,
 
 
 def _log_callback(message, level):
-    message = message.strip()
-    if message:
-        logger_func[level]('ffpyplayer: {}'.format(message))
+    if message := message.strip():
+        logger_func[level](f'ffpyplayer: {message}')
 
 
 class SoundFFPy(Sound):
@@ -162,9 +161,7 @@ class SoundFFPy(Sound):
         self._ffplayer.seek(position, relative=False)
 
     def get_pos(self):
-        if self._ffplayer is not None:
-            return self._ffplayer.get_pts()
-        return 0
+        return self._ffplayer.get_pts() if self._ffplayer is not None else 0
 
     def on_volume(self, instance, volume):
         if self._ffplayer is not None:

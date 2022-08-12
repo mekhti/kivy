@@ -219,7 +219,7 @@ class FileHandler(logging.Handler):
         if FileHandler.fd not in (None, False):
             FileHandler.fd.close()
         FileHandler.fd = open(filename, 'w', encoding=FileHandler.encoding)
-        Logger.info('Logger: Record log in %s' % filename)
+        Logger.info(f'Logger: Record log in {filename}')
 
     def _write_message(self, record):
         if FileHandler.fd in (None, False):
@@ -335,7 +335,7 @@ class LogFile(object):
         channel = self.channel
         lines = s.split('\n')
         for l in lines[:-1]:
-            f('%s: %s' % (channel, l))
+            f(f'{channel}: {l}')
         self.buffer = lines[-1]
 
     def flush(self):
@@ -366,7 +366,6 @@ if 'KIVY_NO_FILELOG' not in os.environ:
     file_log_handler = FileHandler()
     Logger.addHandler(file_log_handler)
 
-# Use the custom handler instead of streaming one.
 if 'KIVY_NO_CONSOLELOG' not in os.environ:
     if hasattr(sys, '_kivy_logging_handler'):
         Logger.addHandler(getattr(sys, '_kivy_logging_handler'))
@@ -386,16 +385,12 @@ if 'KIVY_NO_CONSOLELOG' not in os.environ:
                 )
             ) and os.environ.get('KIVY_BUILD') not in ('android', 'ios')
         )
-        if not use_color:
-            # No additional control characters will be inserted inside the
-            # levelname field, 7 chars will fit "WARNING"
-            color_fmt = formatter_message(
-                '[%(levelname)-7s] %(message)s', use_color)
-        else:
-            # levelname field width need to take into account the length of the
-            # color control codes (7+4 chars for bold+color, and reset)
-            color_fmt = formatter_message(
-                '[%(levelname)-18s] %(message)s', use_color)
+        color_fmt = (
+            formatter_message('[%(levelname)-18s] %(message)s', use_color)
+            if use_color
+            else formatter_message('[%(levelname)-7s] %(message)s', use_color)
+        )
+
         formatter = ColoredFormatter(color_fmt, use_color=use_color)
         console = ConsoleHandler()
         console.setFormatter(formatter)

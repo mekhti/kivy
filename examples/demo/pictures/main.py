@@ -63,7 +63,7 @@ class PicturesApp(App):
                 # add to the main field
                 root.add_widget(picture)
             except Exception as e:
-                Logger.exception('Pictures: Unable to load <%s>' % filename)
+                Logger.exception(f'Pictures: Unable to load <{filename}>')
 
     def on_pause(self):
         return True

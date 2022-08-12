@@ -42,9 +42,7 @@ class ImageLoaderPygame(ImageLoaderBase):
 
     @staticmethod
     def can_save(fmt, is_bytesio):
-        if is_bytesio:
-            return False
-        return fmt in ('png', 'jpg')
+        return False if is_bytesio else fmt in ('png', 'jpg')
 
     @staticmethod
     def can_load_memory():
@@ -58,7 +56,7 @@ class ImageLoaderPygame(ImageLoaderBase):
         try:
             im = None
             if self._inline:
-                im = pygame.image.load(filename, 'x.{}'.format(self._ext))
+                im = pygame.image.load(filename, f'x.{self._ext}')
             elif isfile(filename):
                 with open(filename, 'rb') as fd:
                     im = pygame.image.load(fd)

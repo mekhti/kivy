@@ -296,10 +296,9 @@ class Vector(list):
         -157.7920283010705
 
         '''
-        angle = -(180 / math.pi) * math.atan2(
-            self[0] * a[1] - self[1] * a[0],
-            self[0] * a[0] + self[1] * a[1])
-        return angle
+        return -(180 / math.pi) * math.atan2(
+            self[0] * a[1] - self[1] * a[0], self[0] * a[0] + self[1] * a[1]
+        )
 
     def rotate(self, angle):
         '''Rotate the vector with an angle in degrees.
@@ -388,10 +387,7 @@ class Vector(list):
         c3 = (x3 <= px <= x4) or (x4 <= px <= x3) or (x3 == x4)
         c4 = (y3 <= py <= y4) or (y4 <= py <= y3) or (y3 == y4)
 
-        if (c1 and c2) and (c3 and c4):
-            return Vector(px, py)
-        else:
-            return None
+        return Vector(px, py) if (c1 and c2) and (c3 and c4) else None
 
     @staticmethod
     def in_bbox(point, a, b):

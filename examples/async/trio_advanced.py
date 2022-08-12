@@ -72,7 +72,7 @@ class AsyncApp(App):
             while True:
                 if self.root is not None:
                     status = self.root.ids.label.status
-                    print('{} on the beach'.format(status))
+                    print(f'{status} on the beach')
 
                     # get some sleep
                     if self.root.ids.btn1.state != 'down' and i >= 2:

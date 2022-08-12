@@ -43,6 +43,7 @@ Finally, before running you need to ensure that ffpyplayer is in python's path.
     before kivy exits by setting it to None.
 '''
 
+
 __all__ = ('VideoFFPy', )
 
 try:
@@ -64,7 +65,7 @@ from kivy.graphics.fbo import Fbo
 from kivy.weakmethod import WeakMethod
 import time
 
-Logger.info('VideoFFPy: Using ffpyplayer {}'.format(ffpyplayer.version))
+Logger.info(f'VideoFFPy: Using ffpyplayer {ffpyplayer.version}')
 
 
 logger_func = {'quiet': Logger.critical, 'panic': Logger.critical,
@@ -74,9 +75,8 @@ logger_func = {'quiet': Logger.critical, 'panic': Logger.critical,
 
 
 def _log_callback(message, level):
-    message = message.strip()
-    if message:
-        logger_func[level]('ffpyplayer: {}'.format(message))
+    if message := message.strip():
+        logger_func[level](f'ffpyplayer: {message}')
 
 
 if not get_log_callback():
@@ -139,9 +139,7 @@ class VideoFFPy(VideoBase):
             Clock.schedule_once(close, 0)
 
     def _get_position(self):
-        if self._ffplayer is not None:
-            return self._ffplayer.get_pts()
-        return 0
+        return self._ffplayer.get_pts() if self._ffplayer is not None else 0
 
     def _set_position(self, pos):
         self.seek(pos)
@@ -261,9 +259,9 @@ class VideoFFPy(VideoBase):
 
         # wait until loaded or failed, shouldn't take long, but just to make
         # sure metadata is available.
-        while not self._ffplayer_need_quit:
-            if ffplayer.get_metadata()['src_vid_size'] != (0, 0):
-                break
+        while not self._ffplayer_need_quit and ffplayer.get_metadata()[
+            'src_vid_size'
+        ] == (0, 0):
             wait_for_wakeup(0.005)
 
         if self._ffplayer_need_quit:
@@ -317,11 +315,10 @@ class VideoFFPy(VideoBase):
                     # Assuming last frame is actual, just get it:
                     frame, val = ffplayer.get_frame(force_refresh=True)
                 finally:
-                    ffplayer.set_pause(bool(self._state == 'paused'))
+                    ffplayer.set_pause(self._state == 'paused')
                     # todo: this is not safe because user could have updated
                     # volume between us reading it and setting it
                     ffplayer.set_volume(self._volume)
-            # Get next frame regular:
             else:
                 frame, val = ffplayer.get_frame()
 
@@ -339,7 +336,7 @@ class VideoFFPy(VideoBase):
                     self._next_frame = frame
                     trigger()
                 else:
-                    val = val if val else (1 / 30.)
+                    val = val or 1 / 30.
                 wait_for_wakeup(val)
 
         ffplayer.close_player()

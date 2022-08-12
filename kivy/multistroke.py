@@ -303,7 +303,7 @@ class Recognizer(EventDispatcher):
             have_filters = True
 
         # Prepare a correctly sorted tasklist
-        force_priority_sort = kwargs.get('force_priority_sort', None)
+        force_priority_sort = kwargs.get('force_priority_sort')
         force_sort_on = force_priority_sort and True
         force_sort_off = (force_priority_sort is False) and True
 
@@ -410,9 +410,8 @@ class Recognizer(EventDispatcher):
         p.dump(multistrokes)
 
         if filename:
-            f = open(filename, 'wb')
-            f.write(base64.b64encode(zlib.compress(io.getvalue(), 9)))
-            f.close()
+            with open(filename, 'wb') as f:
+                f.write(base64.b64encode(zlib.compress(io.getvalue(), 9)))
         else:
             return base64.b64encode(zlib.compress(io.getvalue(), 9))
 
@@ -433,8 +432,7 @@ class Recognizer(EventDispatcher):
         elif data is None:
             raise MultistrokeError('import_gesture needs data= or filename=')
 
-        new = self.filter(db=self.parse_gesture(data), **kwargs)
-        if new:
+        if new := self.filter(db=self.parse_gesture(data), **kwargs):
             self.db.extend(new)
 
     def transfer_gesture(self, tgt, **kwargs):
@@ -444,8 +442,7 @@ class Recognizer(EventDispatcher):
         This method accepts optional :meth:`Recognizer.filter` arguments.
         '''
         if hasattr(tgt, 'db') and isinstance(tgt.db, list):
-            send = self.filter(**kwargs)
-            if send:
+            if send := self.filter(**kwargs):
                 tgt.db.append(None)
                 tgt.db[-1:] = send
                 return True
@@ -625,7 +622,7 @@ class Recognizer(EventDispatcher):
                                    'list or Candidate')
 
         cand = Candidate(strokes)
-        o_filter = kwargs.get('orientation_sensitive', None)
+        o_filter = kwargs.get('orientation_sensitive')
         if o_filter is False:
             cand.skip_bounded = True
         elif o_filter is True:
@@ -730,9 +727,7 @@ class ProgressTracker(EventDispatcher):
     def progress(self):
         '''Returns the progress as a float, 0 is 0% done, 1 is 100%. This
         is a Python property.'''
-        if not self.tasks:
-            return 1
-        return self._completed / float(self.tasks)
+        return self._completed / float(self.tasks) if self.tasks else 1
 
     @property
     def best(self):
@@ -771,11 +766,7 @@ class ProgressTracker(EventDispatcher):
                 'template_results': res
             }
 
-            if not dist:
-                self.results[n]['score'] = 1.0
-            else:
-                self.results[n]['score'] = 1.0 - (dist / pi)
-
+            self.results[n]['score'] = 1.0 - (dist / pi) if dist else 1.0
             self.dispatch('on_result', self.results[n])
             return self.results[n]['score']
         else:
@@ -956,12 +947,13 @@ class MultistrokeGesture(object):
             # manually and the orientation_sensitive flag is True, and contains
             # a UnistrokeTemplate that has orientation_sensitive=False (or vice
             # versa). This would cause KeyError - requesting nonexistent vector
-            if tpl.orientation_sens:
-                if skip_bounded:
-                    continue
-            elif skip_invariant:
+            if (
+                tpl.orientation_sens
+                and skip_bounded
+                or not tpl.orientation_sens
+                and skip_invariant
+            ):
                 continue
-
             # Count as a match operation now, since the call to get_
             # angle_similarity below will force vector calculation,
             # even if it doesn't make it to get_distance
@@ -1014,7 +1006,7 @@ class MultistrokeGesture(object):
             all the desired stroke orders.
         '''
         # Seed with index of each stroke
-        self._order = [i for i in xrange(0, len(self.strokes))]
+        self._order = list(xrange(0, len(self.strokes)))
 
         # Prepare ._orders
         self._orders = []
@@ -1042,11 +1034,11 @@ class MultistrokeGesture(object):
                 if n % 2 == 1:
                     tmp = self_order[0]
                     self_order[0] = self_order[n - 1]
-                    self_order[n - 1] = tmp
                 else:
                     tmp = self_order[i]
                     self_order[i] = self_order[n - 1]
-                    self_order[n - 1] = tmp
+
+                self_order[n - 1] = tmp
 
     def _make_unistrokes(self):
         # Create unistroke permutations from self.strokes
@@ -1216,7 +1208,7 @@ class Candidate(object):
         if n not in self.db:
             self.prepare(n)
 
-        prefix = orientation_sens and 'bound_' or 'inv_'
+        prefix = 'bound_' if orientation_sens else 'inv_'
         return self.db[n][prefix + key]
 
     def get_start_unit_vector(self, numpoints, orientation_sens):
@@ -1247,9 +1239,7 @@ class Candidate(object):
         # (see comments in MultistrokeGesture.get_distance())
         if n >= 1:
             return 0.0
-        if n <= -1:
-            return pi
-        return acos(n)
+        return pi if n <= -1 else acos(n)
 
     def prepare(self, numpoints=None):
         '''Prepare the Candidate vectors. self.strokes is combined to a single
@@ -1356,8 +1346,9 @@ def scale_dim(points, size, oneDratio):
 
     if bbox_h == 0 or bbox_w == 0:
         raise MultistrokeError(
-            'scale_dim() called with invalid points: h:{}, w:{}'
-            .format(bbox_h, bbox_w))
+            f'scale_dim() called with invalid points: h:{bbox_h}, w:{bbox_w}'
+        )
+
 
     # 1D or 2D gesture test
     uniformly = min(bbox_w / bbox_h, bbox_h / bbox_w) <= oneDratio

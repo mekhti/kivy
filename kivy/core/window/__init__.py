@@ -123,16 +123,16 @@ class Keyboard(EventDispatcher):
         super(Keyboard, self).__init__()
 
         #: Window which the keyboard is attached too
-        self.window = kwargs.get('window', None)
+        self.window = kwargs.get('window')
 
         #: Callback that will be called when the keyboard is released
-        self.callback = kwargs.get('callback', None)
+        self.callback = kwargs.get('callback')
 
         #: Target that have requested the keyboard
-        self.target = kwargs.get('target', None)
+        self.target = kwargs.get('target')
 
         #: VKeyboard widget, if allowed by the configuration
-        self.widget = kwargs.get('widget', None)
+        self.widget = kwargs.get('widget')
 
     def on_key_down(self, keycode, text, modifiers):
         pass
@@ -420,17 +420,12 @@ class WindowBase(EventDispatcher):
             w, h = self._win._get_gl_size()
         if self.softinput_mode == 'resize':
             h -= self.keyboard_height
-        if r in (0, 180):
-            return w, h
-        return h, w
+        return (w, h) if r in (0, 180) else (h, w)
 
     def _set_size(self, size):
         if self._size != size:
             r = self._rotation
-            if r in (0, 180):
-                self._size = size
-            else:
-                self._size = size[1], size[0]
+            self._size = size if r in (0, 180) else (size[1], size[0])
             self.dispatch('on_pre_resize', *size)
 
     minimum_width = NumericProperty(0)
@@ -502,9 +497,7 @@ class WindowBase(EventDispatcher):
         if self._density != 1:
             _size = self._win._get_gl_size()
         r = self._rotation
-        if r == 0 or r == 180:
-            return _size[0]
-        return _size[1]
+        return _size[0] if r in [0, 180] else _size[1]
 
     width = AliasProperty(_get_width, bind=('_rotation', '_size', '_density'))
     '''Rotated window width.
@@ -519,9 +512,7 @@ class WindowBase(EventDispatcher):
         if self._density != 1:
             _size = self._win._get_gl_size()
         kb = self.keyboard_height if self.softinput_mode == 'resize' else 0
-        if r == 0 or r == 180:
-            return _size[1] - kb
-        return _size[0] - kb
+        return _size[1] - kb if r in [0, 180] else _size[0] - kb
 
     height = AliasProperty(_get_height,
                            bind=('_rotation', '_size', '_density'))
@@ -861,18 +852,14 @@ class WindowBase(EventDispatcher):
         pass
 
     def _get_left(self):
-        if not self.initialized:
-            return self._left
-        return self._get_window_pos()[0]
+        return self._get_window_pos()[0] if self.initialized else self._left
 
     def _set_left(self, value):
         pos = self._get_window_pos()
         self._set_window_pos(value, pos[1])
 
     def _get_top(self):
-        if not self.initialized:
-            return self._top
-        return self._get_window_pos()[1]
+        return self._get_window_pos()[1] if self.initialized else self._top
 
     def _set_top(self, value):
         pos = self._get_window_pos()
@@ -1455,16 +1442,13 @@ class WindowBase(EventDispatcher):
             # if we get initialized more than once, then reload opengl state
             # after the second time.
             # XXX check how it's working on embed platform.
-            if platform == 'linux' or Window.__class__.__name__ == 'WindowSDL':
-                # on linux, it's safe for just sending a resize.
-                self.dispatch('on_pre_resize', *self.size)
-
-            else:
+            if platform != 'linux' and Window.__class__.__name__ != 'WindowSDL':
                 # on other platform, window are recreated, we need to reload.
                 from kivy.graphics.context import get_context
                 get_context().reload()
                 Clock.schedule_once(lambda x: self.canvas.ask_update(), 0)
-                self.dispatch('on_pre_resize', *self.size)
+            # on linux, it's safe for just sending a resize.
+            self.dispatch('on_pre_resize', *self.size)
 
         # ensure the gl viewport is correct
         self.update_viewport()
@@ -1733,10 +1717,10 @@ class WindowBase(EventDispatcher):
 
         y = 0
         _h = h
-        if smode == 'pan':
-            y = kheight
-        elif smode == 'below_target':
+        if smode == 'below_target':
             y = 0 if kheight < targettop else (kheight - targettop)
+        elif smode == 'pan':
+            y = kheight
         if smode == 'scale':
             _h -= kheight
 
@@ -1986,20 +1970,22 @@ class WindowBase(EventDispatcher):
         # Quit if user presses ESC or the typical OSX shortcuts CMD+q or CMD+w
         # TODO If just CMD+w is pressed, only the window should be closed.
         is_osx = platform == 'darwin'
-        if WindowBase.on_keyboard.exit_on_escape:
-            if key == 27 or all([is_osx, key in [113, 119], modifier == 1024]):
-                if not self.dispatch('on_request_close', source='keyboard'):
-                    stopTouchApp()
-                    self.close()
-                    return True
+        if (
+            WindowBase.on_keyboard.exit_on_escape
+            and (key == 27 or all([is_osx, key in [113, 119], modifier == 1024]))
+            and not self.dispatch('on_request_close', source='keyboard')
+        ):
+            stopTouchApp()
+            self.close()
+            return True
 
     if Config:
         on_keyboard.exit_on_escape = Config.getboolean(
                                         'kivy', 'exit_on_escape')
 
-        def __exit(section, name, value):
+        def __exit(self, name, value):
             WindowBase.__dict__['on_keyboard'].exit_on_escape = \
-                Config.getboolean('kivy', 'exit_on_escape')
+                        Config.getboolean('kivy', 'exit_on_escape')
 
         Config.add_callback(__exit, 'kivy', 'exit_on_escape')
 
@@ -2251,10 +2237,8 @@ class WindowBase(EventDispatcher):
             self.docked_vkeyboard = False
 
         Logger.info(
-            'Window: virtual keyboard %sallowed, %s, %s' % (
-                '' if self.allow_vkeyboard else 'not ',
-                'single mode' if self.single_vkeyboard else 'multiuser mode',
-                'docked' if self.docked_vkeyboard else 'not docked'))
+            f"Window: virtual keyboard {'' if self.allow_vkeyboard else 'not '}allowed, {'single mode' if self.single_vkeyboard else 'multiuser mode'}, {'docked' if self.docked_vkeyboard else 'not docked'}"
+        )
 
     def set_vkeyboard_class(self, cls):
         '''.. versionadded:: 1.0.8
@@ -2271,8 +2255,7 @@ class WindowBase(EventDispatcher):
         requested. All instances will be closed.
         '''
         for key in list(self._keyboards.keys())[:]:
-            keyboard = self._keyboards[key]
-            if keyboard:
+            if keyboard := self._keyboards[key]:
                 keyboard.release()
 
     def request_keyboard(
@@ -2410,8 +2393,7 @@ class WindowBase(EventDispatcher):
             if key not in self._keyboards:
                 return
             keyboard = self._keyboards[key]
-            callback = keyboard.callback
-            if callback:
+            if callback := keyboard.callback:
                 keyboard.callback = None
                 callback()
             keyboard.target = None

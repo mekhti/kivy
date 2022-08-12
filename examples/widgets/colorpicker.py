@@ -173,8 +173,7 @@ class Picture(Scatter):
         _pos[0] += self.parent.x
         points = ud['lines'].points
         oldx, oldy = points[-2], points[-1]
-        points = calculate_points(oldx, oldy, _pos[0], _pos[1])
-        if points:
+        if points := calculate_points(oldx, oldy, _pos[0], _pos[1]):
             try:
                 lp = ud['lines'].add_point
                 for idx in range(0, len(points), 2):

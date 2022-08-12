@@ -32,7 +32,7 @@ if __name__ == '__main__':
     import os
 
     if len(sys.argv) < 2:
-        print('Usage: %s filename.kv' % os.path.basename(sys.argv[0]))
+        print(f'Usage: {os.path.basename(sys.argv[0])} filename.kv')
         sys.exit(1)
 
     KvApp(filename=sys.argv[1]).run()

@@ -49,15 +49,18 @@ class TakePictureApp(App):
     def get_filename(self):
         while True:
             self.index += 1
-            fn = (Environment.getExternalStorageDirectory().getPath() +
-                  '/takepicture{}.jpg'.format(self.index))
+            fn = (
+                Environment.getExternalStorageDirectory().getPath()
+                + f'/takepicture{self.index}.jpg'
+            )
+
             if not exists(fn):
                 return fn
 
     def take_picture(self):
         intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         self.last_fn = self.get_filename()
-        self.uri = Uri.parse('file://' + self.last_fn)
+        self.uri = Uri.parse(f'file://{self.last_fn}')
         self.uri = cast('android.os.Parcelable', self.uri)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, self.uri)
         mActivity.startActivityForResult(intent, 0x123)

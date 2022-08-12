@@ -59,10 +59,7 @@ class MultistrokeSettingSlider(MultistrokeSettingItem):
 
     def _to_numtype(self, v):
         try:
-            if self.type == 'float':
-                return round(float(v), 1)
-            else:
-                return int(v)
+            return round(float(v), 1) if self.type == 'float' else int(v)
         except ValueError:
             return self.min
 

@@ -128,18 +128,18 @@ class PangoFontContextManager(FontContextManagerBase):
     @staticmethod
     def add_font(font_context, filename, autocreate=True, family=None):
         if not autocreate and not PangoFontContextManager.exists(font_context):
-            raise Exception("FontContextManager: Attempt to add font file "
-                            "'{}' to non-existing context '{}' without "
-                            "autocreate.".format(filename, font_context))
+            raise Exception(
+                f"FontContextManager: Attempt to add font file '{filename}' to non-existing context '{font_context}' without autocreate."
+            )
+
         if not filename:
             raise Exception("FontContextManager: Cannot add empty font file")
         if not isfile(filename):
             filename = resource_find(filename)
-        if not isfile(filename):
-            if not filename.endswith('.ttf'):
-                filename = resource_find('{}.ttf'.format(filename))
+        if not isfile(filename) and not filename.endswith('.ttf'):
+            filename = resource_find(f'{filename}.ttf')
         if filename and isfile(filename):
             return kpango_font_context_add_font(font_context, filename)
-        raise Exception("FontContextManager: Attempt to add non-existent "
-                        "font file: '{}' to context '{}'"
-                        .format(filename, font_context))
+        raise Exception(
+            f"FontContextManager: Attempt to add non-existent font file: '{filename}' to context '{font_context}'"
+        )

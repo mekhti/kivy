@@ -38,10 +38,7 @@ class InputPostprocDoubleTap(object):
         within the specified threshold. Additionally, the touch profiles
         must be the same kind of touch.
         '''
-        ref_button = None
-        if 'button' in ref.profile:
-            ref_button = ref.button
-
+        ref_button = ref.button if 'button' in ref.profile else None
         for touchid in self.touches:
             if ref.uid == touchid:
                 continue
@@ -73,8 +70,7 @@ class InputPostprocDoubleTap(object):
             if not touch.is_touch:
                 continue
             if etype == 'begin':
-                double_tap = self.find_double_tap(touch)
-                if double_tap:
+                if double_tap := self.find_double_tap(touch):
                     touch.is_double_tap = True
                     tap_time = touch.time_start - double_tap.time_start
                     touch.double_tap_time = tap_time

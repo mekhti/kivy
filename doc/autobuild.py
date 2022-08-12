@@ -6,6 +6,7 @@ Be careful if you change anything in !
 
 '''
 
+
 ignore_list = (
     'kivy._clock',
     'kivy._event',
@@ -69,11 +70,7 @@ import kivy.garden
 from kivy.factory import Factory
 from kivy.lib import ddsfile, mtdev
 
-# check for silenced build
-BE_QUIET = True
-if os.environ.get('BE_QUIET') == 'False':
-    BE_QUIET = False
-
+BE_QUIET = os.environ.get('BE_QUIET') != 'False'
 # force loading of all classes from factory
 for x in list(Factory.classes.keys())[:]:
     getattr(Factory, x)
@@ -99,9 +96,8 @@ def writefile(filename, data):
         with open(f) as fd:
             if fd.read() == data:
                 return
-    h = open(f, 'w')
-    h.write(data)
-    h.close()
+    with open(f, 'w') as h:
+        h.write(data)
 
 
 # Activate Kivy modules
@@ -109,6 +105,7 @@ def writefile(filename, data):
 for k in kivy.kivy_modules.list().keys():
     kivy.kivy_modules.import_module(k)
 '''
+
 
 
 # Search all kivy module
@@ -124,15 +121,14 @@ api_modules = []
 for name, module, filename in l:
     if name in ignore_list:
         continue
-    if not any([name.startswith(x) for x in ignore_list]):
+    if not any(name.startswith(x) for x in ignore_list):
         api_modules.append(name)
     if filename == '__init__':
         packages.append(name)
+    elif hasattr(module, '__all__'):
+        modules[name] = module.__all__
     else:
-        if hasattr(module, '__all__'):
-            modules[name] = module.__all__
-        else:
-            modules[name] = [x for x in dir(module) if not x.startswith('__')]
+        modules[name] = [x for x in dir(module) if not x.startswith('__')]
 
 packages.sort()
 
@@ -209,7 +205,7 @@ def extract_summary_line(doc):
 for package in packages:
     summary = extract_summary_line(sys.modules[package].__doc__)
     if summary is None or summary == '':
-        summary = 'NO DOCUMENTATION (package %s)' % package
+        summary = f'NO DOCUMENTATION (package {package})'
     t = template.replace('$SUMMARY', summary)
     t = t.replace('$PACKAGE', package)
     t = t.replace('$EXAMPLES_REF', '')
@@ -231,17 +227,15 @@ for package in packages:
             continue
         t += "    api-%s.rst\n" % module
 
-    writefile('api-%s.rst' % package, t)
+    writefile(f'api-{package}.rst', t)
 
 
-# Create index for all module
-m = list(modules.keys())
-m.sort()
+m = sorted(modules.keys())
 refid = 0
 for module in m:
     summary = extract_summary_line(sys.modules[module].__doc__)
     if summary is None or summary == '':
-        summary = 'NO DOCUMENTATION (module %s)' % package
+        summary = f'NO DOCUMENTATION (module {package})'
 
     # search examples
     example_output = []
@@ -258,8 +252,7 @@ for module in m:
         xb = os.path.basename(x)
 
         # add a section !
-        example_output.append('File :download:`%s <%s>` ::' % (
-            xb, os.path.join('..', x)))
+        example_output.append(f"File :download:`{xb} <{os.path.join('..', x)}>` ::")
 
         # put the file in
         with open(x, 'r') as fd:
@@ -278,7 +271,7 @@ for module in m:
     else:
         t = t.replace('$EXAMPLES_REF', '')
         t = t.replace('$EXAMPLES', '')
-    writefile('api-%s.rst' % module, t)
+    writefile(f'api-{module}.rst', t)
 
 
 # Generation finished

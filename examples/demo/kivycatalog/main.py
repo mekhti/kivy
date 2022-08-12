@@ -67,7 +67,7 @@ class Container(BoxLayout):
         '''Get the name of the kv file, a lowercase version of the class
         name.
         '''
-        return os.path.join(CONTAINER_KVS, self.__class__.__name__ + '.kv')
+        return os.path.join(CONTAINER_KVS, f'{self.__class__.__name__}.kv')
 
 
 for class_name in CONTAINER_CLASSES:
@@ -81,12 +81,14 @@ class KivyRenderTextInput(CodeInput):
         ctrl, cmd = 64, 1024
         key, key_str = keycode
 
-        if text and key not in (list(self.interesting_keys.keys()) + [27]):
-            # This allows *either* ctrl *or* cmd, but not both.
-            if modifiers == ['ctrl'] or (is_osx and modifiers == ['meta']):
-                if key == ord('s'):
-                    self.catalog.change_kv(True)
-                    return
+        if (
+            text
+            and key not in (list(self.interesting_keys.keys()) + [27])
+            and (modifiers == ['ctrl'] or (is_osx and modifiers == ['meta']))
+            and key == ord('s')
+        ):
+            self.catalog.change_kv(True)
+            return
 
         return super(KivyRenderTextInput, self).keyboard_on_key_down(
             window, keycode, text, modifiers)
@@ -138,17 +140,18 @@ class Catalog(BoxLayout):
         self.language_box.reset_undo()
 
     def schedule_reload(self):
-        if self.auto_reload:
-            txt = self.language_box.text
-            child = self.screen_manager.current_screen.children[0]
-            if txt == child.previous_text:
-                return
-            child.previous_text = txt
-            if self._change_kv_ev is not None:
-                self._change_kv_ev.cancel()
-            if self._change_kv_ev is None:
-                self._change_kv_ev = Clock.create_trigger(self.change_kv, 2)
-            self._change_kv_ev()
+        if not self.auto_reload:
+            return
+        txt = self.language_box.text
+        child = self.screen_manager.current_screen.children[0]
+        if txt == child.previous_text:
+            return
+        child.previous_text = txt
+        if self._change_kv_ev is not None:
+            self._change_kv_ev.cancel()
+        if self._change_kv_ev is None:
+            self._change_kv_ev = Clock.create_trigger(self.change_kv, 2)
+        self._change_kv_ev()
 
     def change_kv(self, *largs):
         '''Called when the update button is clicked. Needs to update the

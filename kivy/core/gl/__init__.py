@@ -41,7 +41,7 @@ if 'KIVY_DOC' not in environ:
 
     def print_gl_version():
         backend = cgl_get_initialized_backend_name()
-        Logger.info('GL: Backend used <{}>'.format(backend))
+        Logger.info(f'GL: Backend used <{backend}>')
         version = glGetString(GL_VERSION)
         vendor = glGetString(GL_VENDOR)
         renderer = glGetString(GL_RENDERER)

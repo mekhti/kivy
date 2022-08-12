@@ -86,15 +86,19 @@ class mainclass(FloatLayout):
 
         # Handle button press/release
         def load_images(*l):
-            if l[0].text == 'load gif' or l[0].text == 'load gif\n from cache':
+            if l[0].text in ['load gif', 'load gif\n from cache']:
                 l[0].text = 'load gif\n from cache'
                 sctr = gifScatter()
-            if (l[0].text == 'load zipped\n png/s' or
-                    l[0].text == 'load zipped\n png/s from cache'):
+            if l[0].text in [
+                'load zipped\n png/s',
+                'load zipped\n png/s from cache',
+            ]:
                 l[0].text = 'load zipped\n png/s from cache'
                 sctr = zipScatter()
-            if (l[0].text == 'load zipped\n jpg/s' or
-                    l[0].text == 'load zipped\n jpg/s from cache'):
+            if l[0].text in [
+                'load zipped\n jpg/s',
+                'load zipped\n jpg/s from cache',
+            ]:
                 l[0].text = 'load zipped\n jpg/s from cache'
                 sctr = jpgScatter()
 
@@ -123,7 +127,7 @@ class mainclass(FloatLayout):
 
         # set/remove border for borderless widgets (16,16,16,16) by default
         but_animated_normal.border = \
-            but_animated_borderless.border = (0, 0, 0, 0)
+                but_animated_borderless.border = (0, 0, 0, 0)
 
         # add widgets to the main layout
         layout.add_widget(left_frame)

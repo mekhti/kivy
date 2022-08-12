@@ -46,8 +46,7 @@ class ClipboardPygame(ClipboardBase):
     def get(self, mimetype='text/plain'):
         self.init()
         mimetype = self._aliases.get(mimetype, mimetype)
-        text = pygame.scrap.get(mimetype)
-        return text
+        return pygame.scrap.get(mimetype)
 
     def put(self, data, mimetype='text/plain'):
         self.init()

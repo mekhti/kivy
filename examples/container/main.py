@@ -45,14 +45,14 @@ class EzsApp(App):
         :rtype: none
     '''
 
-        filename = screen + '.kv'
+        filename = f'{screen}.kv'
         # unload the content of the .kv file
         # reason: it could have data from previous calls
-        Builder.unload_file('kv/' + filename)
+        Builder.unload_file(f'kv/{filename}')
         # clear the container
         self.root.container.clear_widgets()
         # load the content of the .kv file
-        screen = Builder.load_file('kv/' + filename)
+        screen = Builder.load_file(f'kv/{filename}')
         # add the content of the .kv file to the container
         self.root.container.add_widget(screen)
 

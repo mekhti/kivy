@@ -67,8 +67,11 @@ class ShowcaseApp(App):
             'Popups', 'ScreenManager'])
         self.screen_names = self.available_screens
         curdir = dirname(__file__)
-        self.available_screens = [join(curdir, 'data', 'screens',
-            '{}.kv'.format(fn).lower()) for fn in self.available_screens]
+        self.available_screens = [
+            join(curdir, 'data', 'screens', f'{fn}.kv'.lower())
+            for fn in self.available_screens
+        ]
+
         self.go_next_screen()
 
     def on_pause(self):
@@ -125,11 +128,7 @@ class ShowcaseApp(App):
 
     def toggle_source_code(self):
         self.show_sourcecode = not self.show_sourcecode
-        if self.show_sourcecode:
-            height = self.root.height * .3
-        else:
-            height = 0
-
+        height = self.root.height * .3 if self.show_sourcecode else 0
         Animation(height=height, d=.3, t='out_quart').start(
                 self.root.ids.sv)
 

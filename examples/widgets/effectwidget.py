@@ -36,8 +36,6 @@ class SpinnerRow(BoxLayout):
         effects = []
         for child in self.children[::-1]:
             text = child.text
-            if text == 'none':
-                pass
             if text == 'fxaa':
                 effects.append(FXAAEffect())
             if text == 'monochrome':

@@ -259,8 +259,7 @@ class WindowSDL(WindowBase):
             # is resumed
             if self._pause_loop:
                 self._pause_loop = False
-                app = App.get_running_app()
-                if app:
+                if app := App.get_running_app():
                     app.dispatch('on_resume')
 
         elif action == 'windowresized':
@@ -277,7 +276,7 @@ class WindowSDL(WindowBase):
                 self.fullscreen = self._fake_fullscreen = False
             elif not self.fullscreen or self.fullscreen == 'auto':
                 self.custom_titlebar = \
-                    self.borderless = self._fake_fullscreen = False
+                        self.borderless = self._fake_fullscreen = False
             elif self.custom_titlebar:
                 if platform == 'win':
                     # use custom behaviour
@@ -381,7 +380,7 @@ class WindowSDL(WindowBase):
                     logo_size = 512
                 elif platform == 'win':
                     logo_size = 64
-                filename_icon = 'kivy-icon-{}.png'.format(logo_size)
+                filename_icon = f'kivy-icon-{logo_size}.png'
                 filename_icon = resource_find(
                         join(kivy_data_dir, 'logo', filename_icon))
             self.set_icon(filename_icon)
@@ -439,10 +438,7 @@ class WindowSDL(WindowBase):
 
     @deprecated
     def toggle_fullscreen(self):
-        if self.fullscreen in (True, 'auto'):
-            self.fullscreen = False
-        else:
-            self.fullscreen = 'auto'
+        self.fullscreen = False if self.fullscreen in (True, 'auto') else 'auto'
 
     def set_title(self, title):
         self._win.set_window_title(title)
@@ -459,7 +455,7 @@ class WindowSDL(WindowBase):
         width, height = self.size
         data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
         self._win.save_bytes_in_png(filename, data, width, height)
-        Logger.debug('Window: Screenshot saved at <%s>' % filename)
+        Logger.debug(f'Window: Screenshot saved at <{filename}>')
         return filename
 
     def flip(self):
@@ -467,8 +463,7 @@ class WindowSDL(WindowBase):
         super(WindowSDL, self).flip()
 
     def set_system_cursor(self, cursor_name):
-        result = self._win.set_system_cursor(cursor_name)
-        return result
+        return self._win.set_system_cursor(cursor_name)
 
     def _get_window_pos(self):
         return self._win.get_window_pos()
@@ -485,10 +480,7 @@ class WindowSDL(WindowBase):
         modes = ('default', 'binalpha', 'reversebinalpha', 'colorkey')
         color_key = color_key or (0, 0, 0, 1)
         if mode not in modes:
-            Logger.warning(
-                'Window: shape mode can be only '
-                '{}'.format(', '.join(modes))
-            )
+            Logger.warning(f"Window: shape mode can be only {', '.join(modes)}")
             return
         if not isinstance(color_key, (tuple, list)):
             return
@@ -580,8 +572,6 @@ class WindowSDL(WindowBase):
                 # which is the preferred one for the application.
                 if platform in ('ios', 'android'):
                     SDL2MotionEventProvider.q.appendleft(event)
-                pass
-
             elif action == 'mousemotion':
                 x, y = args
                 x, y = self._fix_mouse_pos(x, y)
@@ -605,10 +595,10 @@ class WindowSDL(WindowBase):
                     self._cursor_entered = True
                     self.dispatch('on_cursor_enter')
                 btn = 'left'
-                if button == 3:
-                    btn = 'right'
-                elif button == 2:
+                if button == 2:
                     btn = 'middle'
+                elif button == 3:
+                    btn = 'right'
                 elif button == 4:
                     btn = "mouse4"
                 elif button == 5:
@@ -649,7 +639,6 @@ class WindowSDL(WindowBase):
 
             elif action.startswith('drop'):
                 self._dispatch_drop_event(action, args)
-            # video resize
             elif action == 'windowresized':
                 self._size = self._win.window_size
                 # don't use trigger here, we want to delay the resize event
@@ -770,9 +759,8 @@ class WindowSDL(WindowBase):
                 text = args[0]
                 self.dispatch('on_textedit', text)
 
-            # unhandled event !
             else:
-                Logger.trace('WindowSDL: Unhandled event %s' % str(event))
+                Logger.trace(f'WindowSDL: Unhandled event {str(event)}')
 
     def _dispatch_drop_event(self, action, args):
         x, y = (0, 0) if self._drop_pos is None else self._drop_pos
@@ -799,7 +787,7 @@ class WindowSDL(WindowBase):
             return True
 
     def _do_resize(self, dt):
-        Logger.debug('Window: Resize window to %s' % str(self.size))
+        Logger.debug(f'Window: Resize window to {str(self.size)}')
         self._win.resize_window(*self._size)
         self.dispatch('on_pre_resize', *self.size)
 
@@ -824,14 +812,11 @@ class WindowSDL(WindowBase):
                 continue
 
             action, args = event[0], event[1:]
-            if action == 'quit':
+            if action in ['app_willenterforeground', 'windowrestored']:
+                break
+            elif action == 'quit':
                 EventLoop.quit = True
                 break
-            elif action == 'app_willenterforeground':
-                break
-            elif action == 'windowrestored':
-                break
-
         if app:
             app.dispatch('on_resume')
 

@@ -193,8 +193,12 @@ class Recorder(EventDispatcher):
         if not self.record:
             return
 
-        args = dict((arg, getattr(motionevent, arg))
-                    for arg in self.record_attrs if hasattr(motionevent, arg))
+        args = {
+            arg: getattr(motionevent, arg)
+            for arg in self.record_attrs
+            if hasattr(motionevent, arg)
+        }
+
 
         args['profile'] = [x for x in motionevent.profile if x in
                            self.record_profile_mask]

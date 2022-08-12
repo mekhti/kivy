@@ -33,8 +33,7 @@ class WindowEglRpi(WindowBase):
         bcm.host_init()
 
         w, h = bcm.graphics_get_display_size(self._rpi_dispmanx_id)
-        Logger.debug('Window: Actual display size: {}x{}'.format(
-            w, h))
+        Logger.debug(f'Window: Actual display size: {w}x{h}')
         self._size = w, h
         self._create_window(w, h)
         self._create_egl_context(self.win, 0)

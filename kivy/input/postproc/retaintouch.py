@@ -61,8 +61,6 @@ class InputPostprocRetainTouch(object):
                     selection.sy = touch.sy
                     events.remove((etype, touch))
                     events.append((etype, selection))
-                else:
-                    pass
             elif etype == 'begin':
                 # new touch, found the nearest one
                 selection = None

@@ -77,8 +77,7 @@ class BezierTest(FloatLayout):
 
     def on_touch_move(self, touch):
         if self.collide_point(touch.pos[0], touch.pos[1]):
-            c = self.current_point
-            if c:
+            if c := self.current_point:
                 self.points[(c - 1) * 2] = touch.pos[0] - self.pos[0]
                 self.points[(c - 1) * 2 + 1] = touch.pos[1] - self.pos[1]
                 self.bezier.points = self.points

@@ -221,17 +221,17 @@ kivy_options = {
         'sdl2', 'pygame', 'dummy', 'gtk3', )}
 
 # Read environment
-for option in kivy_options:
-    key = 'KIVY_%s' % option.upper()
+for option, value in kivy_options.items():
+    key = f'KIVY_{option.upper()}'
     if key in environ:
         try:
-            if type(kivy_options[option]) in (list, tuple):
+            if type(value) in (list, tuple):
                 kivy_options[option] = environ[key].split(',')
             else:
                 kivy_options[option] = environ[key].lower() in \
                     ('true', '1', 'yes')
         except Exception:
-            Logger.warning('Core: Wrong value for %s environment key' % key)
+            Logger.warning(f'Core: Wrong value for {key} environment key')
             Logger.exception('')
 
 # Extract all needed path in kivy
@@ -257,17 +257,21 @@ kivy_home_dir = ''
 kivy_config_fn = ''
 #: Kivy user modules directory
 kivy_usermodules_dir = ''
-#: Kivy examples directory
-kivy_examples_dir = ''
-for examples_dir in (
-        join(dirname(dirname(__file__)), 'examples'),
-        join(sys.exec_prefix, 'share', 'kivy-examples'),
-        join(sys.prefix, 'share', 'kivy-examples'),
-        '/usr/share/kivy-examples', '/usr/local/share/kivy-examples',
-        expanduser('~/.local/share/kivy-examples')):
-    if exists(examples_dir):
-        kivy_examples_dir = examples_dir
-        break
+kivy_examples_dir = next(
+    (
+        examples_dir
+        for examples_dir in (
+            join(dirname(dirname(__file__)), 'examples'),
+            join(sys.exec_prefix, 'share', 'kivy-examples'),
+            join(sys.prefix, 'share', 'kivy-examples'),
+            '/usr/share/kivy-examples',
+            '/usr/local/share/kivy-examples',
+            expanduser('~/.local/share/kivy-examples'),
+        )
+        if exists(examples_dir)
+    ),
+    '',
+)
 
 
 def _patch_mod_deps_win(dep_mod, mod_name):
@@ -318,18 +322,20 @@ for importer, modname, package in _packages:
 
         version = ''
         if hasattr(mod, '__version__'):
-            version = ' {}'.format(mod.__version__)
+            version = f' {mod.__version__}'
         _logging_msgs.append(
-            'deps: Successfully imported "{}.{}"{}'.
-            format(package, modname, version))
+            f'deps: Successfully imported "{package}.{modname}"{version}'
+        )
+
 
         if modname.startswith('gst') and version == '0.3.3':
             _patch_mod_deps_win(mod, modname)
 
     except ImportError as e:
         Logger.warning(
-            'deps: Error importing dependency "{}.{}": {}'.
-            format(package, modname, str(e)))
+            f'deps: Error importing dependency "{package}.{modname}": {str(e)}'
+        )
+
 
 # Don't go further if we generate documentation
 if any(name in sys.argv[0] for name in (
@@ -393,7 +399,7 @@ if not environ.get('KIVY_DOC_INCLUDE'):
                 'config=', 'debug', 'dpi='])
 
         except GetoptError as err:
-            Logger.error('Core: %s' % str(err))
+            Logger.error(f'Core: {str(err)}')
             kivy_usage()
             sys.exit(2)
 
@@ -407,7 +413,7 @@ if not environ.get('KIVY_DOC_INCLUDE'):
             pass
 
         # set argv to the non-read args
-        sys.argv = sys_argv[0:1] + args
+        sys.argv = sys_argv[:1] + args
         if mp_fork is not None:
             # Needs to be first opt for support_freeze to work
             sys.argv.insert(1, '--multiprocessing-fork')
@@ -503,13 +509,15 @@ for msg in _logging_msgs:
     Logger.info(msg)
 
 if not _KIVY_RELEASE and _kivy_git_hash and _kivy_build_date:
-    Logger.info('Kivy: v%s, git-%s, %s' % (
-        __version__, _kivy_git_hash[:7], _kivy_build_date))
+    Logger.info(
+        f'Kivy: v{__version__}, git-{_kivy_git_hash[:7]}, {_kivy_build_date}'
+    )
+
 else:
-    Logger.info('Kivy: v%s' % __version__)
-Logger.info('Kivy: Installed at "{}"'.format(__file__))
-Logger.info('Python: v{}'.format(sys.version))
-Logger.info('Python: Interpreter at "{}"'.format(sys.executable))
+    Logger.info(f'Kivy: v{__version__}')
+Logger.info(f'Kivy: Installed at "{__file__}"')
+Logger.info(f'Python: v{sys.version}')
+Logger.info(f'Python: Interpreter at "{sys.executable}"')
 
 from kivy.logger import file_log_handler
 if file_log_handler is not None:

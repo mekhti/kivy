@@ -19,10 +19,13 @@ class KivyClassDocumenter(ClassDocumenter):
         if not self.doc_as_attr and self.options.show_inheritance:
             self.add_line('', '<autodoc>')
             if len(self.object.__bases__):
-                bases = [b.__module__ == '__builtin__' and
-                         ':class:`%s`' % b.__name__ or
-                         ':class:`%s.%s`' % (fix(b.__module__), b.__name__)
-                         for b in self.object.__bases__]
+                bases = [
+                    b.__module__ == '__builtin__'
+                    and f':class:`{b.__name__}`'
+                    or f':class:`{fix(b.__module__)}.{b.__name__}`'
+                    for b in self.object.__bases__
+                ]
+
                 self.add_line(_('   Bases: %s') % ', '.join(bases),
                               '<autodoc>')
 def setup(app):

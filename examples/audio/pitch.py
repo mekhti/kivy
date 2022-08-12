@@ -22,9 +22,11 @@ NOTES = (
 class Test(App):
     def build(self):
         self.sound = SoundLoader.load(
-            '/usr/lib64/python{}.{}/test/audiodata/pluck-pcm32.wav'
-            .format(*version_info[0:2])
+            '/usr/lib64/python{}.{}/test/audiodata/pluck-pcm32.wav'.format(
+                *version_info[:2]
+            )
         )
+
         root = BoxLayout()
         for octave in range(-2, 3):
             for note, pitch in NOTES:

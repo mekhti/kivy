@@ -25,7 +25,7 @@ def parse_filename(filename):
     filename = parse_string(filename)
     result = resource_find(filename)
     if result is None:
-        Logger.error('Resource: unable to find <%s>' % filename)
+        Logger.error(f'Resource: unable to find <{filename}>')
     return result or filename
 
 
@@ -54,20 +54,16 @@ def parse_color(text):
     '''
     value = [1, 1, 1, 1]
     if text.startswith('rgb'):
-        res = re.match(r'rgba?\((.*)\)', text)
-        if res:
-            try:
-                # default r/g/b values to 1 if greater than 255 else x/255
-                value = [1 if int(x) > 255. else (int(x) / 255.)
-                         for x in re.split(', ?', res.groups()[0])]
-                if len(value) < 3:
-                    # in case of invalid input like rgb()/rgb(r)/rgb(r, g)
-                    raise ValueError
-            except ValueError:
-                return color_error('ColorParser: Invalid color for %r' % text)
-            except AttributeError:
-                return color_error('ColorParser: Invalid color for %r' % text)
-        else:
+        if not (res := re.match(r'rgba?\((.*)\)', text)):
+            return color_error('ColorParser: Invalid color for %r' % text)
+        try:
+            # default r/g/b values to 1 if greater than 255 else x/255
+            value = [1 if int(x) > 255. else (int(x) / 255.)
+                     for x in re.split(', ?', res.groups()[0])]
+            if len(value) < 3:
+                # in case of invalid input like rgb()/rgb(r)/rgb(r, g)
+                raise ValueError
+        except (ValueError, AttributeError):
             return color_error('ColorParser: Invalid color for %r' % text)
         if len(value) == 3:
             value.append(1.)
@@ -76,9 +72,9 @@ def parse_color(text):
         if text[0] == '#':
             res = text[1:]
         lres = len(res)
-        if lres == 3 or lres == 4:
+        if lres in {3, 4}:
             res = ''.join([x + x for x in res])
-        elif lres != 6 and lres != 8:
+        elif lres not in [6, 8]:
             # raise ColorException('Invalid color format for %r' % text)
             return color_error(
                 'ColorParser: Invalid color format for %r' % text)
@@ -87,7 +83,7 @@ def parse_color(text):
                      for i in range(0, len(res), 2)]
         except ValueError:
             return color_error('ColorParser: Invalid color for %r' % text)
-        if lres == 6 or lres == 3:
+        if lres in {6, 3}:
             value.append(1.)
     return value
 
@@ -99,7 +95,7 @@ def parse_bool(text):
         return True
     elif text.lower() in ('false', '0'):
         return False
-    raise Exception('Invalid boolean: %s' % text)
+    raise Exception(f'Invalid boolean: {text}')
 
 
 def parse_string(text):
@@ -118,12 +114,12 @@ def parse_int2(text):
     '''
     texts = [x for x in text.split(' ') if x.strip() != '']
     value = list(map(parse_int, texts))
-    if len(value) < 1:
-        raise Exception('Invalid int2 format: %s' % text)
+    if not value:
+        raise Exception(f'Invalid int2 format: {text}')
     elif len(value) == 1:
         return [value[0], value[0]]
     elif len(value) > 2:
-        raise Exception('Too many values in %s: %s' % (text, str(value)))
+        raise Exception(f'Too many values in {text}: {value}')
     return value
 
 
@@ -136,17 +132,17 @@ def parse_float4(text):
     '''
     texts = [x for x in text.split(' ') if x.strip() != '']
     value = list(map(parse_float, texts))
-    if len(value) < 1:
-        raise Exception('Invalid float4 format: %s' % text)
+    if not value:
+        raise Exception(f'Invalid float4 format: {text}')
     elif len(value) == 1:
-        return [value[0] for x in range(4)]
+        return [value[0] for _ in range(4)]
     elif len(value) == 2:
         return [value[0], value[1], value[0], value[1]]
     elif len(value) == 3:
         # ambiguous case!
         return [value[0], value[1], value[0], value[2]]
     elif len(value) > 4:
-        raise Exception('Too many values in %s' % text)
+        raise Exception(f'Too many values in {text}')
     return value
 
 

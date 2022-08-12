@@ -64,6 +64,7 @@ If you need to escape the markup from the current text, use
 :func:`kivy.utils.escape_markup`.
 '''
 
+
 __all__ = ('MarkupLabel', )
 
 import re
@@ -77,7 +78,7 @@ from functools import partial
 
 # We need to do this trick when documentation is generated
 MarkupLabelBase = Label
-if Label is None:
+if MarkupLabelBase is None:
     MarkupLabelBase = LabelBase
 
 
@@ -137,10 +138,7 @@ class MarkupLabel(MarkupLabelBase):
 
     def render(self, real=False):
         options = copy(self.options)
-        if not real:
-            ret = self._pre_render()
-        else:
-            ret = self._render_real()
+        ret = self._render_real() if real else self._pre_render()
         self.options = options
         return ret
 

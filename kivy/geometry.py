@@ -85,17 +85,15 @@ def minimum_bounding_circle(points):
     # find a point Q such that the angle of the line segment
     # PQ with the x axis is minimal
     def x_axis_angle(q):
-        if q == P:
-            return 1e10  # max val if the same, to skip
-        return abs((q - P).angle((1, 0)))
+        return 1e10 if q == P else abs((q - P).angle((1, 0)))
+
     Q = min(points, key=x_axis_angle)
 
     for p in points:
         # find R such that angle PRQ is minimal
         def angle_pq(r):
-            if r in (P, Q):
-                return 1e10  # max val if the same, to skip
-            return abs((r - P).angle(r - Q))
+            return 1e10 if r in (P, Q) else abs((r - P).angle(r - Q))
+
         R = min(points, key=angle_pq)
 
         # check for case 1 (angle PRQ is obtuse), the circle is determined

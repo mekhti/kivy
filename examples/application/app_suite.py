@@ -98,10 +98,9 @@ def print_class(class_name):
     filename = sys.argv[0]
     with open(filename) as f:
         data = f.read()
-        regex = "^(class " + class_name + "\\b.*?)^\\S"
-        match = re.search(regex, data, flags=re.MULTILINE | re.DOTALL)
-        if match:
-            print(match.group(1))
+        regex = f"^(class {class_name}" + "\\b.*?)^\\S"
+        if match := re.search(regex, data, flags=re.MULTILINE | re.DOTALL):
+            print(match[1])
 
 
 # the __name__ idiom executes when run from command line but not from import.
