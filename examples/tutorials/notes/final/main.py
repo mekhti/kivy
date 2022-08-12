@@ -112,7 +112,7 @@ class NoteApp(App):
 
     def edit_note(self, note_index):
         note = self.notes.data[note_index]
-        name = 'note{}'.format(note_index)
+        name = f'note{note_index}'
 
         if self.root.has_screen(name):
             self.root.remove_widget(self.root.get_screen(name))

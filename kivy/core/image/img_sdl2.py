@@ -43,7 +43,7 @@ class ImageLoaderSDL2(ImageLoaderBase):
         else:
             info = _img_sdl2.load_from_filename(filename)
         if not info:
-            Logger.warning('Image: Unable to load image <%s>' % filename)
+            Logger.warning(f'Image: Unable to load image <{filename}>')
             raise Exception('SDL2: Unable to load image')
 
         w, h, fmt, pixels, rowlength = info

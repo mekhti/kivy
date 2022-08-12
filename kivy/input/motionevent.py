@@ -147,7 +147,7 @@ class EnhancedDictionary(dict):
 
 class MotionEventMetaclass(type):
 
-    def __new__(mcs, name, bases, attrs):
+    def __new__(cls, name, bases, attrs):
         __attrs__ = []
         for base in bases:
             if hasattr(base, '__attrs__'):
@@ -155,8 +155,7 @@ class MotionEventMetaclass(type):
         if '__attrs__' in attrs:
             __attrs__.extend(attrs['__attrs__'])
         attrs['__attrs__'] = tuple(__attrs__)
-        return super(MotionEventMetaclass, mcs).__new__(mcs, name,
-                                                        bases, attrs)
+        return super(MotionEventMetaclass, cls).__new__(cls, name, bases, attrs)
 
 
 MotionEventBase = MotionEventMetaclass('MotionEvent', (object, ), {})
@@ -461,7 +460,7 @@ class MotionEvent(MotionEventBase):
         self.pz = self.psz * z_max
         if smode:
             # Adjust y for keyboard height
-            if smode == 'pan' or smode == 'below_target':
+            if smode in ['pan', 'below_target']:
                 self.y -= kheight
                 self.oy -= kheight
                 self.py -= kheight
@@ -563,7 +562,7 @@ class MotionEvent(MotionEventBase):
     def __str__(self):
         basename = str(self.__class__)
         classname = basename.split('.')[-1].replace('>', '').replace('\'', '')
-        return '<%s spos=%s pos=%s>' % (classname, self.spos, self.pos)
+        return f'<{classname} spos={self.spos} pos={self.pos}>'
 
     def __repr__(self):
         out = []
@@ -574,9 +573,7 @@ class MotionEvent(MotionEventBase):
             if isroutine(v):
                 continue
             out.append('%s="%s"' % (x, v))
-        return '<%s %s>' % (
-            self.__class__.__name__,
-            ' '.join(out))
+        return f"<{self.__class__.__name__} {' '.join(out)}>"
 
     @property
     def is_mouse_scrolling(self, *args):

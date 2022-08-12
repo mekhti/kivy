@@ -75,7 +75,7 @@ class TwistedClientApp(App):
             self.textbox.text = ""
 
     def print_message(self, msg):
-        self.label.text += "{}\n".format(msg)
+        self.label.text += f"{msg}\n"
 
 
 if __name__ == '__main__':

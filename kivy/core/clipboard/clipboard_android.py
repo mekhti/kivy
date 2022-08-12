@@ -25,9 +25,7 @@ class ClipboardAndroid(ClipboardBase):
     def __init__(self):
         super(ClipboardAndroid, self).__init__()
         self._clipboard = None
-        self._data = dict()
-        self._data['text/plain'] = None
-        self._data['application/data'] = None
+        self._data = {'text/plain': None, 'application/data': None}
         PythonActivity._clipboard = None
 
     def get(self, mimetype='text/plain'):
@@ -65,8 +63,7 @@ class ClipboardAndroid(ClipboardBase):
             data = clippy.getText()
         else:
             ClipDescription = autoclass('android.content.ClipDescription')
-            primary_clip = clippy.getPrimaryClip()
-            if primary_clip:
+            if primary_clip := clippy.getPrimaryClip():
                 try:
                     data = primary_clip.getItemAt(0)
                     if data:

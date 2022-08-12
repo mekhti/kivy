@@ -75,15 +75,13 @@ class GestureDatabase(object):
         io = BytesIO()
         p = pickle.Pickler(io)
         p.dump(gesture)
-        data = base64.b64encode(zlib.compress(io.getvalue(), 9))
-        return data
+        return base64.b64encode(zlib.compress(io.getvalue(), 9))
 
     def str_to_gesture(self, data):
         '''Convert a unique string to a gesture.'''
         io = BytesIO(zlib.decompress(base64.b64decode(data)))
         p = pickle.Unpickler(io)
-        gesture = p.load()
-        return gesture
+        return p.load()
 
 
 class GesturePoint:
@@ -108,33 +106,25 @@ class GestureStroke:
 
     def __init__(self):
         ''' A stroke in the gesture.'''
-        self.points = list()
-        self.screenpoints = list()
+        self.points = []
+        self.screenpoints = []
 
     # These return the min and max coordinates of the stroke
     @property
     def max_x(self):
-        if len(self.points) == 0:
-            return 0
-        return max(self.points, key=lambda pt: pt.x).x
+        return 0 if len(self.points) == 0 else max(self.points, key=lambda pt: pt.x).x
 
     @property
     def min_x(self):
-        if len(self.points) == 0:
-            return 0
-        return min(self.points, key=lambda pt: pt.x).x
+        return 0 if len(self.points) == 0 else min(self.points, key=lambda pt: pt.x).x
 
     @property
     def max_y(self):
-        if len(self.points) == 0:
-            return 0
-        return max(self.points, key=lambda pt: pt.y).y
+        return 0 if len(self.points) == 0 else max(self.points, key=lambda pt: pt.y).y
 
     @property
     def min_y(self):
-        if len(self.points) == 0:
-            return 0
-        return min(self.points, key=lambda pt: pt.y).y
+        return 0 if len(self.points) == 0 else min(self.points, key=lambda pt: pt.y).y
 
     def add_point(self, x, y):
         '''
@@ -185,10 +175,8 @@ class GestureStroke:
 
         # Calculate how long each point should be in the stroke
         target_stroke_size = \
-            self.stroke_length(self.points) / float(sample_points)
-        new_points = list()
-        new_points.append(self.points[0])
-
+                self.stroke_length(self.points) / float(sample_points)
+        new_points = [self.points[0]]
         # We loop on the points
         prev = self.points[0]
         src_distance = 0.0
@@ -209,10 +197,10 @@ class GestureStroke:
                     to_y = y_dir * ratio + prev.y
                     new_points.append(GesturePoint(to_x, to_y))
                     dst_distance = self.stroke_length(self.points) / \
-                        float(sample_points) * len(new_points)
+                            float(sample_points) * len(new_points)
 
         # If this happens, we are into troubles...
-        if not len(new_points) == sample_points:
+        if len(new_points) != sample_points:
             raise ValueError('Invalid number of strokes points; got '
                              '%d while it should be %d' %
                              (len(new_points), sample_points))
@@ -246,20 +234,17 @@ class Gesture:
         self.width = 0.
         self.height = 0.
         self.gesture_product = 0.
-        self.strokes = list()
-        if tolerance is None:
-            self.tolerance = Gesture.DEFAULT_TOLERANCE
-        else:
-            self.tolerance = tolerance
+        self.strokes = []
+        self.tolerance = Gesture.DEFAULT_TOLERANCE if tolerance is None else tolerance
 
     def _scale_gesture(self):
         ''' Scales down the gesture to a unit of 1.'''
         # map() creates a list of min/max coordinates of the strokes
         # in the gesture and min()/max() pulls the lowest/highest value
-        min_x = min([stroke.min_x for stroke in self.strokes])
-        max_x = max([stroke.max_x for stroke in self.strokes])
-        min_y = min([stroke.min_y for stroke in self.strokes])
-        max_y = max([stroke.max_y for stroke in self.strokes])
+        min_x = min(stroke.min_x for stroke in self.strokes)
+        max_x = max(stroke.max_x for stroke in self.strokes)
+        min_y = min(stroke.min_y for stroke in self.strokes)
+        max_y = max(stroke.max_y for stroke in self.strokes)
         x_len = max_x - min_x
         self.width = x_len
         y_len = max_y - min_y
@@ -280,8 +265,8 @@ class Gesture:
 
         for stroke in self.strokes:
             # adds up all the points inside the stroke
-            stroke_y = sum([pt.y for pt in stroke.points])
-            stroke_x = sum([pt.x for pt in stroke.points])
+            stroke_y = sum(pt.y for pt in stroke.points)
+            stroke_x = sum(pt.x for pt in stroke.points)
             total_y += stroke_y
             total_x += stroke_x
             total_points += len(stroke.points)
@@ -301,11 +286,11 @@ class Gesture:
            the stroke.
         '''
         self.strokes.append(GestureStroke())
-        if isinstance(point_list, list) or isinstance(point_list, tuple):
+        if isinstance(point_list, (list, tuple)):
             for point in point_list:
                 if isinstance(point, GesturePoint):
                     self.strokes[-1].points.append(point)
-                elif isinstance(point, list) or isinstance(point, tuple):
+                elif isinstance(point, (list, tuple)):
                     if len(point) != 2:
                         raise ValueError("Stroke entry must have 2 values max")
                     self.strokes[-1].add_point(point[0], point[1])
@@ -348,14 +333,13 @@ class Gesture:
         ''' Calculates the dot product of the gesture with another gesture.'''
         if len(comparison_gesture.strokes) != len(self.strokes):
             return -1
-        if getattr(comparison_gesture, 'gesture_product', True) is False or \
-           getattr(self, 'gesture_product', True) is False:
+        if not getattr(comparison_gesture, 'gesture_product', True) or not getattr(
+            self, 'gesture_product', True
+        ):
             return -1
         dot_product = 0.0
-        for stroke_index, (my_stroke, cmp_stroke) in enumerate(
-                list(zip(self.strokes, comparison_gesture.strokes))):
-            for pt_index, (my_point, cmp_point) in enumerate(
-                    list(zip(my_stroke.points, cmp_stroke.points))):
+        for my_stroke, cmp_stroke in list(zip(self.strokes, comparison_gesture.strokes)):
+            for my_point, cmp_point in list(zip(my_stroke.points, cmp_stroke.points)):
                 dot_product += (my_point.x * cmp_point.x +
                                 my_point.y * cmp_point.y)
         return dot_product
@@ -396,20 +380,13 @@ class Gesture:
             # If the gestures don't have the same number of strokes, its
             # definitely not the same gesture
             score = self.get_score(comparison_gesture)
-            if (score > (1.0 - self.tolerance) and
-                    score < (1.0 + self.tolerance)):
-                return True
-            else:
-                return False
+            return score > (1.0 - self.tolerance) and score < (1.0 + self.tolerance)
         else:
             return NotImplemented
 
     def __ne__(self, comparison_gesture):
         result = self.__eq__(comparison_gesture)
-        if result is NotImplemented:
-            return result
-        else:
-            return not result
+        return result if result is NotImplemented else not result
 
     def __lt__(self, comparison_gesture):
         raise TypeError("Gesture cannot be evaluated with <")

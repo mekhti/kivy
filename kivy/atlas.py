@@ -201,7 +201,7 @@ class Atlas(EventDispatcher):
         assert(filename.endswith('.atlas'))
         filename = filename.replace('/', os.sep)
 
-        Logger.debug('Atlas: Load <%s>' % filename)
+        Logger.debug(f'Atlas: Load <{filename}>')
         with open(filename, 'r') as fd:
             meta = json.load(fd)
 
@@ -210,7 +210,7 @@ class Atlas(EventDispatcher):
         textures = {}
         for subfilename, ids in meta.items():
             subfilename = join(d, subfilename)
-            Logger.debug('Atlas: Load <%s>' % subfilename)
+            Logger.debug(f'Atlas: Load <{subfilename}>')
 
             # load the image
             ci = CoreImage(subfilename)
@@ -281,12 +281,11 @@ class Atlas(EventDispatcher):
             size_w = size_h = int(size)
 
         # open all of the images
-        ims = list()
+        ims = []
         for f in filenames:
-            fp = open(f, 'rb')
-            im = Image.open(fp)
-            im.load()
-            fp.close()
+            with open(f, 'rb') as fp:
+                im = Image.open(fp)
+                im.load()
             ims.append((f, im))
 
         # sort by image area
@@ -354,8 +353,10 @@ class Atlas(EventDispatcher):
         # images and blit the source images to the appropriate locations
         Logger.info('Atlas: create an {0}x{1} rgba image'.format(size_w,
                                                                  size_h))
-        outimages = [Image.new('RGBA', (size_w, size_h))
-                     for i in range(0, int(numoutimages))]
+        outimages = [
+            Image.new('RGBA', (size_w, size_h)) for _ in range(int(numoutimages))
+        ]
+
         for fb in fullboxes:
             x, y = fb[2], fb[3]
             out = outimages[fb[1]]
@@ -398,7 +399,7 @@ class Atlas(EventDispatcher):
             x, y, w, h = fb[2:6]
             d[uid] = x, size_h - y - h, w, h
 
-        outfn = '%s.atlas' % outname
+        outfn = f'{outname}.atlas'
         with open(outfn, 'w') as fd:
             json.dump(meta, fd)
 
@@ -428,7 +429,7 @@ if __name__ == '__main__':
         elif option.startswith('--padding='):
             options['padding'] = int(option.split('=', 1)[-1])
         elif option[:2] == '--':
-            print('Unknown option {}'.format(option))
+            print(f'Unknown option {option}')
             sys.exit(1)
         else:
             break

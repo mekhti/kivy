@@ -379,7 +379,7 @@ class LoaderBase(object):
             for imdata in data._data:
                 imdata.source = filename
         except Exception as ex:
-            Logger.exception('Loader: Failed to load image <%s>' % filename)
+            Logger.exception(f'Loader: Failed to load image <{filename}>')
             # close file when remote file not found or download error
             try:
                 if _out_osfd:
@@ -420,7 +420,7 @@ class LoaderBase(object):
             self._trigger_update()
             return
 
-        for x in range(self.max_upload_per_frame):
+        for _ in range(self.max_upload_per_frame):
             try:
                 filename, data = self._q_done.pop()
             except IndexError:
@@ -489,10 +489,6 @@ class LoaderBase(object):
                 Cache.append('kv.loader', filename, False)
             self._start_wanted = True
             self._trigger_update()
-        else:
-            # already queued for loading
-            pass
-
         return client
 
     def remove_from_cache(self, filename):

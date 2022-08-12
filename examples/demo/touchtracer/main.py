@@ -59,9 +59,7 @@ class Touchtracer(FloatLayout):
         print(pressure)
         # this might mean we are on a device whose pressure value is
         # incorrectly reported by SDL2, like recent iOS devices.
-        if pressure == 0.0:
-            return 1
-        return dp(pressure * 10)
+        return 1 if pressure == 0.0 else dp(pressure * 10)
 
     def on_touch_down(self, touch):
         win = self.get_parent_window()

@@ -56,10 +56,7 @@ def interpolate(value_from, value_to, step=10):
         dimensions. No test is done to check the dimensions are the same.
     '''
     if type(value_from) in (list, tuple):
-        out = []
-        for x, y in zip(value_from, value_to):
-            out.append(interpolate(x, y, step))
-        return out
+        return [interpolate(x, y, step) for x, y in zip(value_from, value_to)]
     else:
         return value_from + (value_to - value_from) / float(step)
 
@@ -153,11 +150,7 @@ def get_random_color(alpha=1.0):
 
 def is_color_transparent(c):
     '''Return True if the alpha channel is 0.'''
-    if len(c) < 4:
-        return False
-    if float(c[3]) == 0.:
-        return True
-    return False
+    return False if len(c) < 4 else float(c[3]) == 0.
 
 
 hex_colormap = {
@@ -329,7 +322,7 @@ def deprecated(func=None, msg=''):
     @functools.wraps(func)
     def new_func(*args, **kwargs):
         file, line, caller = inspect.stack()[1][1:4]
-        caller_id = "%s:%s:%s" % (file, line, caller)
+        caller_id = f"{file}:{line}:{caller}"
         # We want to print deprecated warnings only once:
         if caller_id not in DEPRECATED_CALLERS:
             DEPRECATED_CALLERS.append(caller_id)
@@ -344,13 +337,14 @@ def deprecated(func=None, msg=''):
 
             if msg:
                 warning = '{}: {}'.format(msg, warning)
-            warning = 'Deprecated: ' + warning
+            warning = f'Deprecated: {warning}'
 
             from kivy.logger import Logger
             Logger.warning(warning)
             if func.__doc__:
                 Logger.warning(func.__doc__)
         return func(*args, **kwargs)
+
     return new_func
 
 
@@ -370,9 +364,7 @@ class SafeList(list):
 
     @deprecated
     def iterate(self, reverse=False):
-        if reverse:
-            return iter(reversed(self))
-        return iter(self)
+        return iter(reversed(self)) if reverse else iter(self)
 
 
 class QueryDict(dict):
@@ -538,12 +530,7 @@ def _get_pi_version():
     # Determine the Pi version using the processor bits using the new-style
     # revision format
     revision = int(revision.group(1), base=16)
-    if revision & 0x800000:
-        return ((revision & 0xF000) >> 12) + 1
-
-    # If it is not using the new style revision format,
-    # then it must be a Raspberry Pi 1
-    return 1
+    return ((revision & 0xF000) >> 12) + 1 if revision & 0x800000 else 1
 
 
 pi_version = _get_pi_version()

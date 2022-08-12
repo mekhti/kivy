@@ -108,7 +108,6 @@ class DampedScrollEffect(ScrollEffect):
         self.trigger_velocity_update()
 
     def apply_distance(self, distance):
-        os = abs(self.overscroll)
-        if os:
+        if os := abs(self.overscroll):
             distance /= 1. + os / sp(200.)
         super(DampedScrollEffect, self).apply_distance(distance)

@@ -49,9 +49,7 @@ class GestureDatabaseItem(FloatLayout):
             self.ids.select.text = 'Select'
 
     def update_template_count(self, *l):
-        tpl_count = 0
-        for g in self.gesture_list:
-            tpl_count += len(g.templates)
+        tpl_count = sum(len(g.templates) for g in self.gesture_list)
         self.template_count = tpl_count
 
     def draw_item(self, *l):
@@ -63,17 +61,17 @@ class GestureDatabaseItem(FloatLayout):
         self._draw_rect()
 
     def _draw_rect(self, clear=False, *l):
-        col = self.ids.select.state == 'down' and 1 or .2
+        col = 1 if self.ids.select.state == 'down' else .2
         with self.canvas:
             Color(col, 0, 0, .15)
             if self.rect or clear:
                 self.canvas.remove(self.rect)
             self.rect = Rectangle(size=self.size, pos=self.pos)
 
-    def on_select(*l):
+    def on_select(self):
         pass
 
-    def on_deselect(*l):
+    def on_deselect(self):
         pass
 
 

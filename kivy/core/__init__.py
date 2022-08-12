@@ -94,8 +94,13 @@ def core_select_lib(category, llist, create_instance=False,
                 category.capitalize(), option))
             Logger.trace('', exc_info=e)
 
-    err = '\n'.join(['{} - {}: {}\n{}'.format(opt, e.__class__.__name__, e,
-                   ''.join(traceback.format_tb(tb))) for opt, e, tb in errs])
+    err = '\n'.join(
+        [
+            f"{opt} - {e.__class__.__name__}: {e}\n{''.join(traceback.format_tb(tb))}"
+            for opt, e, tb in errs
+        ]
+    )
+
     Logger.critical(
         '{0}: Unable to find any valuable {0} provider. Please enable '
         'debug logging (e.g. add -d if running from the command line, or '

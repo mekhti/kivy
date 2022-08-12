@@ -68,7 +68,7 @@ class SoundLoader:
     @staticmethod
     def register(classobj):
         '''Register a new class to load the sound.'''
-        Logger.debug('Audio: register %s' % classobj.__name__)
+        Logger.debug(f'Audio: register {classobj.__name__}')
         SoundLoader._classes.append(classobj)
 
     @staticmethod
@@ -83,8 +83,7 @@ class SoundLoader:
         for classobj in SoundLoader._classes:
             if ext in classobj.extensions():
                 return classobj(source=filename)
-        Logger.warning('Audio: Unable to find a loader for <%s>' %
-                       filename)
+        Logger.warning(f'Audio: Unable to find a loader for <{filename}>')
         return None
 
 

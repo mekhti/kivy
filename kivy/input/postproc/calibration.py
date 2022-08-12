@@ -109,8 +109,7 @@ class InputPostprocCalibration(object):
                     params['auto'] = width, height
                     break
                 if key not in ('xoffset', 'yoffset', 'xratio', 'yratio'):
-                    Logger.error(
-                        'Calibration: invalid key provided: {}'.format(key))
+                    Logger.error(f'Calibration: invalid key provided: {key}')
                 params[key] = float(value)
             self.devices[device_key] = params
 
@@ -137,7 +136,7 @@ class InputPostprocCalibration(object):
         for calibration.
         """
         input_type = self.provider_map.get(event.__class__)
-        key = '({})'.format(input_type)
+        key = f'({input_type})'
         if input_type and key in self.devices:
             return key
 

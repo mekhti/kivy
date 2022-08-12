@@ -100,12 +100,10 @@ class FactoryBase(object):
         if classname in self.classes:
             if warn:
                 info = self.classes[classname]
-                Logger.warning('Factory: Ignored class "{}" re-declaration. '
-                'Current -  module: {}, cls: {}, baseclass: {}, filename: {}. '
-                'Ignored -  module: {}, cls: {}, baseclass: {}, filename: {}.'.
-                format(classname, info['module'], info['cls'],
-                       info['baseclasses'], info['filename'], module, cls,
-                       baseclasses, filename))
+                Logger.warning(
+                    f"""Factory: Ignored class "{classname}" re-declaration. Current -  module: {info['module']}, cls: {info['cls']}, baseclass: {info['baseclasses']}, filename: {info['filename']}. Ignored -  module: {module}, cls: {cls}, baseclass: {baseclasses}, filename: {filename}."""
+                )
+
             return
         self.classes[classname] = {
             'module': module,
@@ -142,9 +140,8 @@ class FactoryBase(object):
             if name[0] == name[0].lower():
                 # if trying to access attributes like checking for `bind`
                 # then raise AttributeError
-                raise AttributeError(
-                    'First letter of class name <%s> is in lowercase' % name)
-            raise FactoryException('Unknown class <%s>' % name)
+                raise AttributeError(f'First letter of class name <{name}> is in lowercase')
+            raise FactoryException(f'Unknown class <{name}>')
 
         item = classes[name]
         cls = item['cls']
@@ -158,15 +155,15 @@ class FactoryBase(object):
                     level=0  # force absolute
                 )
                 if not hasattr(module, name):
-                    raise FactoryException(
-                        'No class named <%s> in module <%s>' % (
-                            name, item['module']))
+                    raise FactoryException(f"No class named <{name}> in module <{item['module']}>")
                 cls = item['cls'] = getattr(module, name)
 
             elif item['baseclasses']:
-                rootwidgets = []
-                for basecls in item['baseclasses'].split('+'):
-                    rootwidgets.append(Factory.get(basecls))
+                rootwidgets = [
+                    Factory.get(basecls)
+                    for basecls in item['baseclasses'].split('+')
+                ]
+
                 cls = item['cls'] = type(str(name), tuple(rootwidgets), {})
 
             else:

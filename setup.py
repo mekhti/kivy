@@ -53,8 +53,7 @@ def getoutput(cmd, env=None):
     if p.returncode:  # if not returncode == 0
         print('WARNING: A problem occurred while running {0} (code {1})\n'
               .format(cmd, p.returncode))
-        stderr_content = p.stderr.read()
-        if stderr_content:
+        if stderr_content := p.stderr.read():
             print('{0}\n'.format(stderr_content))
         return ""
     return p.stdout.read()
@@ -67,16 +66,13 @@ def pkgconfig(*packages, **kw):
 
     if isdir(pconfig):
         lenviron = environ.copy()
-        lenviron['PKG_CONFIG_PATH'] = '{};{}'.format(
-            environ.get('PKG_CONFIG_PATH', ''), pconfig)
-    cmd = 'pkg-config --libs --cflags {}'.format(' '.join(packages))
+        lenviron['PKG_CONFIG_PATH'] = f"{environ.get('PKG_CONFIG_PATH', '')};{pconfig}"
+    cmd = f"pkg-config --libs --cflags {' '.join(packages)}"
     results = getoutput(cmd, lenviron).split()
     for token in results:
         ext = token[:2].decode('utf-8')
-        flag = flag_map.get(ext)
-        if not flag:
-            continue
-        kw.setdefault(flag, []).append(token[2:].decode('utf-8'))
+        if flag := flag_map.get(ext):
+            kw.setdefault(flag, []).append(token[2:].decode('utf-8'))
     return kw
 
 
@@ -170,8 +166,7 @@ for key in list(c_options.keys()):
         c_options[key] = value
 
 use_embed_signature = environ.get('USE_EMBEDSIGNATURE', '0') == '1'
-use_embed_signature = use_embed_signature or bool(
-    platform not in ('ios', 'android'))
+use_embed_signature = use_embed_signature or platform not in ('ios', 'android')
 
 # -----------------------------------------------------------------------------
 # We want to be able to install kivy as a wheel without a dependency
@@ -186,7 +181,7 @@ can_use_cython = True
 
 if platform in ('ios', 'android'):
     # NEVER use or declare cython on these platforms
-    print('Not using cython on %s' % platform)
+    print(f'Not using cython on {platform}')
     can_use_cython = False
 
 
@@ -195,8 +190,8 @@ if platform in ('ios', 'android'):
 
 # the build path where kivy is being compiled
 src_path = build_path = dirname(__file__)
-print("Current directory is: {}".format(os.getcwd()))
-print("Source and initial build directory is: {}".format(src_path))
+print(f"Current directory is: {os.getcwd()}")
+print(f"Source and initial build directory is: {src_path}")
 
 # __version__ is imported by exec, but help linter not complain
 __version__ = None
@@ -207,25 +202,12 @@ with open(join(src_path, 'kivy', '_version.py'), encoding="utf-8") as f:
 class KivyBuildExt(build_ext, object):
 
     def __new__(cls, *a, **kw):
-        # Note how this class is declared as a subclass of distutils
-        # build_ext as the Cython version may not be available in the
-        # environment it is initially started in. However, if Cython
-        # can be used, setuptools will bring Cython into the environment
-        # thus its version of build_ext will become available.
-        # The reason why this is done as a __new__ rather than through a
-        # factory function is because there are distutils functions that check
-        # the values provided by cmdclass with issublcass, and so it would
-        # result in an exception.
-        # The following essentially supply a dynamically generated subclass
-        # that mix in the cython version of build_ext so that the
-        # functionality provided will also be executed.
-        if can_use_cython:
-            from Cython.Distutils import build_ext as cython_build_ext
-            build_ext_cls = type(
-                'KivyBuildExt', (KivyBuildExt, cython_build_ext), {})
-            return super(KivyBuildExt, cls).__new__(build_ext_cls)
-        else:
+        if not can_use_cython:
             return super(KivyBuildExt, cls).__new__(cls)
+        from Cython.Distutils import build_ext as cython_build_ext
+        build_ext_cls = type(
+            'KivyBuildExt', (KivyBuildExt, cython_build_ext), {})
+        return super(KivyBuildExt, cls).__new__(build_ext_cls)
 
     def finalize_options(self):
         retval = super(KivyBuildExt, self).finalize_options()
@@ -236,14 +218,13 @@ class KivyBuildExt(build_ext, object):
             # build will be disabled
             self.parallel = min(4, os.cpu_count() or 0)
             if self.parallel:
-                print('Building extensions in parallel using {} cores'.format(
-                    self.parallel))
+                print(f'Building extensions in parallel using {self.parallel} cores')
 
         global build_path
         if (self.build_lib is not None and exists(self.build_lib) and
                 not self.inplace):
             build_path = self.build_lib
-            print("Updated build directory to: {}".format(build_path))
+            print(f"Updated build directory to: {build_path}")
 
         return retval
 
@@ -253,13 +234,17 @@ class KivyBuildExt(build_ext, object):
         config_pxi_fn = ('include', 'config.pxi')
         config_py_fn = ('setupconfig.py', )
 
-        # generate headers
-        config_h = '// Autogenerated file for Kivy C configuration\n'
-        config_h += '#define __PY3 1\n'
-        config_pxi = '# Autogenerated file for Kivy Cython configuration\n'
-        config_pxi += 'DEF PY3 = 1\n'
-        config_py = '# Autogenerated file for Kivy configuration\n'
-        config_py += 'PY3 = 1\n'
+        config_h = (
+            '// Autogenerated file for Kivy C configuration\n'
+            + '#define __PY3 1\n'
+        )
+
+        config_pxi = (
+            '# Autogenerated file for Kivy Cython configuration\n'
+            + 'DEF PY3 = 1\n'
+        )
+
+        config_py = '# Autogenerated file for Kivy configuration\n' + 'PY3 = 1\n'
         config_py += 'CYTHON_MIN = {0}\nCYTHON_MAX = {1}\n'.format(
             repr(MIN_CYTHON_STRING), repr(MAX_CYTHON_STRING))
         config_py += 'CYTHON_BAD = {0}\n'.format(repr(', '.join(map(
@@ -283,18 +268,16 @@ class KivyBuildExt(build_ext, object):
         config_py += 'DEBUG = {0}\n'.format(debug)
         config_pxi += 'DEF PLATFORM = "{0}"\n'.format(platform)
         config_py += 'PLATFORM = "{0}"\n'.format(platform)
-        for fn, content in (
-                (config_h_fn, config_h), (config_pxi_fn, config_pxi),
-                (config_py_fn, config_py)):
+        for fn, content in ((config_h_fn, config_h), (config_pxi_fn, config_pxi), (config_py_fn, config_py)):
             build_fn = expand(build_path, *fn)
             if self.update_if_changed(build_fn, content):
-                print('Updated {}'.format(build_fn))
+                print(f'Updated {build_fn}')
             src_fn = expand(src_path, *fn)
             if src_fn != build_fn and self.update_if_changed(src_fn, content):
-                print('Updated {}'.format(src_fn))
+                print(f'Updated {src_fn}')
 
         c = self.compiler.compiler_type
-        print('Detected compiler is {}'.format(c))
+        print(f'Detected compiler is {c}')
         if c != 'msvc':
             for e in self.extensions:
                 e.extra_link_args += ['-lm']
@@ -318,8 +301,10 @@ class KivyBuildExt(build_ext, object):
 def _check_and_fix_sdl2_mixer(f_path):
     # Between SDL_mixer 2.0.1 and 2.0.4, the included frameworks changed
     # smpeg2 have been replaced with mpg123, but there is no need to fix.
-    smpeg2_path = ("{}/Versions/A/Frameworks/smpeg2.framework"
-                   "/Versions/A/smpeg2").format(f_path)
+    smpeg2_path = (
+        f"{f_path}/Versions/A/Frameworks/smpeg2.framework/Versions/A/smpeg2"
+    )
+
     if not exists(smpeg2_path):
         return
 
@@ -327,7 +312,7 @@ def _check_and_fix_sdl2_mixer(f_path):
     rpath_from = ("@executable_path/../Frameworks/SDL2.framework"
                   "/Versions/A/SDL2")
     rpath_to = "@rpath/../../../../SDL2.framework/Versions/A/SDL2"
-    output = getoutput(("otool -L '{}'").format(smpeg2_path)).decode('utf-8')
+    output = getoutput(f"otool -L '{smpeg2_path}'").decode('utf-8')
     if "@executable_path" not in output:
         return
 
@@ -336,12 +321,11 @@ def _check_and_fix_sdl2_mixer(f_path):
     print("WARNING: reference to @executable_path that will fail the")
     print("WARNING: execution of your application.")
     print("WARNING: We are going to change:")
-    print("WARNING: from: {}".format(rpath_from))
-    print("WARNING: to: {}".format(rpath_to))
-    getoutput("install_name_tool -change {} {} {}".format(
-        rpath_from, rpath_to, smpeg2_path))
+    print(f"WARNING: from: {rpath_from}")
+    print(f"WARNING: to: {rpath_to}")
+    getoutput(f"install_name_tool -change {rpath_from} {rpath_to} {smpeg2_path}")
 
-    output = getoutput(("otool -L '{}'").format(smpeg2_path))
+    output = getoutput(f"otool -L '{smpeg2_path}'")
     if b"@executable_path" not in output:
         print("WARNING: Change successfully applied!")
         print("WARNING: You'll never see this message again.")

@@ -272,11 +272,7 @@ class LabelBase(object):
         if 'size' in kwargs:
             options['text_size'] = kwargs['size']
         else:
-            if text_size is None:
-                options['text_size'] = (None, None)
-            else:
-                options['text_size'] = text_size
-
+            options['text_size'] = (None, None) if text_size is None else text_size
         self._text_size = options['text_size']
         self._text = options['text']
         self._internal_size = 0, 0  # the real computed text size (inclds pad)
@@ -337,11 +333,7 @@ class LabelBase(object):
         if fontname in fonts:
             # return the preferred font for the current bold/italic combination
             italic = int(options['italic'])
-            if options['bold']:
-                bold = FONT_BOLD
-            else:
-                bold = FONT_REGULAR
-
+            bold = FONT_BOLD if options['bold'] else FONT_REGULAR
             options['font_name_r'] = fonts[fontname][italic | bold]
 
         elif fontname in fontscache:
@@ -349,7 +341,7 @@ class LabelBase(object):
         else:
             filename = resource_find(fontname)
             if not filename and not fontname.endswith('.ttf'):
-                fontname = '{}.ttf'.format(fontname)
+                fontname = f'{fontname}.ttf'
                 filename = resource_find(fontname)
 
             if filename is None:
@@ -383,7 +375,7 @@ class LabelBase(object):
         elif platform == 'android':
             fdirs = ['/system/fonts']
         else:
-            raise Exception("Unknown platform: {}".format(platform))
+            raise Exception(f"Unknown platform: {platform}")
 
         fdirs.append(os.path.join(kivy_data_dir, 'fonts'))
         # register the font dirs
@@ -471,10 +463,7 @@ class LabelBase(object):
         elps = textwidth('...')[0]
         if elps > uw:
             self.is_shortened = True
-            if textwidth('..')[0] <= uw:
-                return '..'
-            else:
-                return '.'
+            return '..' if textwidth('..')[0] <= uw else '.'
         uw -= elps
 
         f = partial(text.find, c)
@@ -495,10 +484,7 @@ class LabelBase(object):
                     opts['split_str'] = c
                     return res
                 # at this point we do char by char so e1 must be zero
-                if l1 <= uw:
-                    return chr('{0}...').format(text[:e1])
-                return chr('...')
-
+                return chr('{0}...').format(text[:e1]) if l1 <= uw else chr('...')
             # both word fits, and there's at least on split_str
             if s2 == e1:  # there's only on split_str
                 self.is_shortened = True
@@ -520,16 +506,14 @@ class LabelBase(object):
                         if l2 + l1 > uw:
                             break
                         e1 = ee1
-                        if e1 == s2:
-                            break
                     else:
                         ss2 = f_rev(0, s2 - offset)
                         l2 = textwidth(text[ss2 + 1:])[0]
                         if l2 + l1 > uw:
                             break
                         s2 = ss2
-                        if e1 == s2:
-                            break
+                    if e1 == s2:
+                        break
         else:  # left
             # no split, or the last word doesn't even fit
             if s2 != -1:
@@ -563,10 +547,7 @@ class LabelBase(object):
         return chr('{0}...{1}').format(text[:e1], text[s2 + 1:])
 
     def _default_line_options(self, lines):
-        for line in lines:
-            if len(line.words):  # get opts from first line, first word
-                return line.words[0].options
-        return None
+        return next((line.words[0].options for line in lines if len(line.words)), None)
 
     def clear_texture(self):
         self._render_begin()
@@ -613,14 +594,17 @@ class LabelBase(object):
                 if not cur_base_dir:
                     cur_base_dir = find_base_dir(line)
             x = xpad
-            if halign == 'auto':
-                if cur_base_dir and 'rtl' in cur_base_dir:
-                    x = max(0, int(w - lw - xpad))  # right-align RTL text
-            elif halign == 'center':
+            if (
+                halign == 'auto'
+                and cur_base_dir
+                and 'rtl' in cur_base_dir
+                or halign != 'auto'
+                and halign != 'center'
+                and halign == 'right'
+            ):
+                x = max(0, int(w - lw - xpad))  # right-align RTL text
+            elif halign != 'auto' and halign == 'center':
                 x = int((w - lw) / 2.)
-            elif halign == 'right':
-                x = max(0, int(w - lw - xpad))
-
             # right left justify
             # divide left over space between `spaces`
             # TODO implement a better method of stretching glyphs?
@@ -674,7 +658,7 @@ class LabelBase(object):
         y = ypad = options['padding_y']  # pos in the texture
         if valign == 'bottom':
             y = size[1] - ih + ypad
-        elif valign == 'middle' or valign == 'center':
+        elif valign in ['middle', 'center']:
             y = int((size[1] - ih) / 2 + ypad)
 
         self._render_begin()
@@ -714,8 +698,7 @@ class LabelBase(object):
         if not text:
             return 0, 0
 
-        if uh is not None and (options['valign'] == 'middle' or
-                               options['valign'] == 'center'):
+        if uh is not None and options['valign'] in ['middle', 'center']:
             center = -1  # pos of newline
             if len(text) > 1:
                 middle = int(len(text) // 2)
@@ -1010,7 +993,5 @@ if 'KIVY_DOC' not in os.environ:
         FontContextManager = PangoFontContextManager()
     else:
         FontContextManager = FontContextManagerBase()
-
-
 # For the first initialization, register the default font
     Label.register(DEFAULT_FONT, *_default_font_paths)

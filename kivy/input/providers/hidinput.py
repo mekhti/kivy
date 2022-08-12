@@ -339,7 +339,7 @@ else:
                 from kivy.core.window import Keyboard
 
             self.input_fn = None
-            self.default_ranges = dict()
+            self.default_ranges = {}
 
             # split arguments
             args = args.split(',')
@@ -350,7 +350,7 @@ else:
 
             # read filename
             self.input_fn = args[0]
-            Logger.info('HIDInput: Read event from <%s>' % self.input_fn)
+            Logger.info(f'HIDInput: Read event from <{self.input_fn}>')
 
             # read parameters
             for arg in args[1:]:
@@ -367,7 +367,7 @@ else:
                 # ensure the key exist
                 key, value = arg
                 if key not in HIDInputMotionEventProvider.options:
-                    Logger.error('HIDInput: unknown %s option' % key)
+                    Logger.error(f'HIDInput: unknown {key} option')
                     continue
 
                 # ensure the value
@@ -386,8 +386,10 @@ else:
             if 'rotation' not in self.default_ranges:
                 self.default_ranges['rotation'] = 0
             elif self.default_ranges['rotation'] not in (0, 90, 180, 270):
-                Logger.error('HIDInput: invalid rotation value ({})'.format(
-                    self.default_ranges['rotation']))
+                Logger.error(
+                    f"HIDInput: invalid rotation value ({self.default_ranges['rotation']})"
+                )
+
                 self.default_ranges['rotation'] = 0
 
         def start(self):
@@ -509,7 +511,7 @@ else:
                         point['size_h'] = ev_value
 
             def process_as_mouse_or_keyboard(
-                    tv_sec, tv_usec, ev_type, ev_code, ev_value):
+                        tv_sec, tv_usec, ev_type, ev_code, ev_value):
                 if ev_type == EV_SYN:
                     if ev_code == SYN_REPORT:
                         process([point])
@@ -568,7 +570,7 @@ else:
                         330: 'touch',
                         320: 'pen'}
 
-                    if ev_code in buttons.keys():
+                    if ev_code in buttons:
                         if ev_value:
                             if 'button' not in point:
                                 point['button'] = buttons[ev_code]
@@ -600,7 +602,7 @@ else:
                         keycode = Keyboard.keycodes[z.lower()]
 
                         if ev_value == 1:
-                            if z == 'shift' or z == 'alt':
+                            if z in ['shift', 'alt']:
                                 Window._modifiers.append(z)
                             elif z.endswith('ctrl'):
                                 Window._modifiers.append('ctrl')
@@ -612,8 +614,7 @@ else:
                             dispatch_queue.append(('key_up', (
                                 keycode, ev_code,
                                 keys_str.get(z, z), Window._modifiers)))
-                            if ((z == 'shift' or z == 'alt') and
-                                    (z in Window._modifiers)):
+                            if z in ['shift', 'alt'] and z in Window._modifiers:
                                 Window._modifiers.remove(z)
                             elif (z.endswith('ctrl') and
                                   'ctrl' in Window._modifiers):
@@ -665,7 +666,7 @@ else:
             # get the controller name (EVIOCGNAME)
             device_name = fcntl.ioctl(fd, EVIOCGNAME + (256 << 16),
                                       " " * 256).decode().strip()
-            Logger.info('HIDMotionEvent: using <%s>' % device_name)
+            Logger.info(f'HIDMotionEvent: using <{device_name}>')
 
             # get abs infos
             bit = fcntl.ioctl(fd, EVIOCGBIT + (EV_MAX << 16), ' ' * sz_l)
@@ -689,7 +690,7 @@ else:
                                           (struct_input_absinfo_sz << 16),
                                           ' ' * struct_input_absinfo_sz)
                     abs_value, abs_min, abs_max, abs_fuzz, \
-                        abs_flat, abs_res = struct.unpack('iiiiii', absinfo)
+                                abs_flat, abs_res = struct.unpack('iiiiii', absinfo)
                     if y == ABS_MT_POSITION_X:
                         is_multitouch = True
                         range_min_position_x = drs('min_position_x', abs_min)

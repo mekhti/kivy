@@ -128,13 +128,13 @@ class ModeScreen(Screen):
             p2 = "You have the right setting to use this demo.\n\n"
         else:
             p2 = "You need the keyboard mode to 'dock', 'system' or '"\
-                 "'systemanddock'(below)\n in order to "\
-                 "use custom onscreen keyboards.\n\n"
+                     "'systemanddock'(below)\n in order to "\
+                     "use custom onscreen keyboards.\n\n"
 
         p3 = "[b][color=#ff0000]Warning:[/color][/b] This is a system-wide " \
-            "setting and will affect all Kivy apps. If you change the\n" \
-            " keyboard mode, please use this app" \
-            " to reset this value to its original one."
+                "setting and will affect all Kivy apps. If you change the\n" \
+                " keyboard mode, please use this app" \
+                " to reset this value to its original one."
 
         self.center_label.text = "".join([p1, p2, p3])
 

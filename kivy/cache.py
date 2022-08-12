@@ -57,8 +57,8 @@ class Cache(object):
             'timeout': timeout}
         Cache._objects[category] = {}
         Logger.debug(
-            'Cache: register <%s> with limit=%s, timeout=%s' %
-            (category, str(limit), str(timeout)))
+            f'Cache: register <{category}> with limit={str(limit)}, timeout={str(timeout)}'
+        )
 
     @staticmethod
     def append(category, key, obj, timeout=None):
@@ -96,7 +96,7 @@ class Cache(object):
         try:
             cat = Cache._categories[category]
         except KeyError:
-            Logger.warning('Cache: category <%s> does not exist' % category)
+            Logger.warning(f'Cache: category <{category}> does not exist')
             return
 
         timeout = timeout or cat['timeout']
@@ -178,18 +178,16 @@ class Cache(object):
         try:
             if key is not None:
                 del Cache._objects[category][key]
-                Logger.trace('Cache: Removed %s:%s from cache' %
-                             (category, key))
+                Logger.trace(f'Cache: Removed {category}:{key} from cache')
             else:
                 Cache._objects[category] = {}
-                Logger.trace('Cache: Flushed category %s from cache' %
-                             category)
+                Logger.trace(f'Cache: Flushed category {category} from cache')
         except Exception:
             pass
 
     @staticmethod
     def _purge_oldest(category, maxpurge=1):
-        Logger.trace('Cache: Remove oldest in %s' % category)
+        Logger.trace(f'Cache: Remove oldest in {category}')
         import heapq
         time = Clock.get_time()
         heap_list = []

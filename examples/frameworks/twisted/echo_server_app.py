@@ -9,8 +9,7 @@ from twisted.internet import protocol
 
 class EchoServer(protocol.Protocol):
     def dataReceived(self, data):
-        response = self.factory.app.handle_message(data)
-        if response:
+        if response := self.factory.app.handle_message(data):
             self.transport.write(response)
 
 
@@ -35,13 +34,13 @@ class TwistedServerApp(App):
 
     def handle_message(self, msg):
         msg = msg.decode('utf-8')
-        self.label.text = "received:  {}\n".format(msg)
+        self.label.text = f"received:  {msg}\n"
 
         if msg == "ping":
             msg = "Pong"
         if msg == "plop":
             msg = "Kivy Rocks!!!"
-        self.label.text += "responded: {}\n".format(msg)
+        self.label.text += f"responded: {msg}\n"
         return msg.encode('utf-8')
 
 

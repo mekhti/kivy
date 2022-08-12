@@ -264,9 +264,7 @@ class ImageLoaderBase(object):
             # if not create it and append to the cache
             if texture is None:
                 imagedata = self._data[count]
-                source = '{}{}|'.format(
-                    'zip|' if fname.endswith('.zip') else '',
-                    self._nocache)
+                source = f"{'zip|' if fname.endswith('.zip') else ''}{self._nocache}|"
                 imagedata.source = chr(source) + uid
                 texture = Texture.create_from_data(
                     imagedata, mipmap=self._mipmap)
@@ -306,9 +304,7 @@ class ImageLoaderBase(object):
         '''
         if self._textures is None:
             self.populate()
-        if self._textures is None:
-            return None
-        return self._textures[0]
+        return None if self._textures is None else self._textures[0]
 
     @property
     def textures(self):
@@ -360,8 +356,10 @@ class ImageLoader(object):
                     if (ext not in loader.extensions() or
                             not loader.can_load_memory()):
                         continue
-                    Logger.debug('Image%s: Load <%s> from <%s>' %
-                                 (loader.__name__[11:], zfilename, filename))
+                    Logger.debug(
+                        f'Image{loader.__name__[11:]}: Load <{zfilename}> from <{filename}>'
+                    )
+
                     try:
                         im = loader(zfilename, ext=ext, rawdata=tmpfile,
                                     inline=True, **kwargs)
@@ -374,14 +372,14 @@ class ImageLoader(object):
                     # overwritten
                     image_data.append(im._data[0])
                     image = im
-                # else: if not image file skip to next
+                        # else: if not image file skip to next
             except:
                 Logger.warning('Image: Unable to load image'
                                '<%s> in zip <%s> trying to continue...'
                                % (zfilename, filename))
         z.close()
-        if len(image_data) == 0:
-            raise Exception('no images in zip <%s>' % filename)
+        if not image_data:
+            raise Exception(f'no images in zip <{filename}>')
         # replace Image.Data with the array of all the images in the zip
         image._data = image_data
         image.filename = filename
@@ -402,8 +400,7 @@ class ImageLoader(object):
             try:
                 rfn, uid = rfn.rsplit('/', 1)
             except ValueError:
-                raise ValueError(
-                    'Image: Invalid %s name for atlas' % filename)
+                raise ValueError(f'Image: Invalid {filename} name for atlas')
 
             # search if we already got the atlas loaded
             atlas = Cache.get('kv.atlas', rfn)
@@ -413,7 +410,7 @@ class ImageLoader(object):
             # kv.texture cache.
             if atlas:
                 texture = atlas[uid]
-                fn = 'atlas://%s/%s' % (rfn, uid)
+                fn = f'atlas://{rfn}/{uid}'
                 cid = '{}|{:d}|{:d}'.format(fn, False, 0)
                 Cache.append('kv.texture', cid, texture)
                 return Image(texture)
@@ -429,7 +426,7 @@ class ImageLoader(object):
             Cache.append('kv.atlas', rfn, atlas)
             # first time, fill our texture cache.
             for nid, texture in atlas.textures.items():
-                fn = 'atlas://%s/%s' % (rfn, nid)
+                fn = f'atlas://{rfn}/{nid}'
                 cid = '{}|{:d}|{:d}'.format(fn, False, 0)
                 Cache.append('kv.texture', cid, texture)
             return Image(atlas[uid])
@@ -443,25 +440,20 @@ class ImageLoader(object):
 
         filename = resource_find(filename)
 
-        # special case. When we are trying to load a "zip" file with image, we
-        # will use the special zip_loader in ImageLoader. This might return a
-        # sequence of images contained in the zip.
         if ext == 'zip':
             return ImageLoader.zip_loader(filename)
-        else:
-            im = None
-            # Get actual image format instead of extension if possible
-            ext = imghdr.what(filename) or ext
-            for loader in ImageLoader.loaders:
-                if ext not in loader.extensions():
-                    continue
-                Logger.debug('Image%s: Load <%s>' %
-                             (loader.__name__[11:], filename))
-                im = loader(filename, **kwargs)
-                break
-            if im is None:
-                raise Exception('Unknown <%s> type, no loader found.' % ext)
-            return im
+        im = None
+        # Get actual image format instead of extension if possible
+        ext = imghdr.what(filename) or ext
+        for loader in ImageLoader.loaders:
+            if ext not in loader.extensions():
+                continue
+            Logger.debug(f'Image{loader.__name__[11:]}: Load <{filename}>')
+            im = loader(filename, **kwargs)
+            break
+        if im is None:
+            raise Exception(f'Unknown <{ext}> type, no loader found.')
+        return im
 
 
 class Image(EventDispatcher):
@@ -537,7 +529,7 @@ class Image(EventDispatcher):
         elif isinstance(arg, ImageLoaderBase):
             self.image = arg
         elif isinstance(arg, BytesIO):
-            ext = kwargs.get('ext', None)
+            ext = kwargs.get('ext')
             if not ext:
                 raise Exception('Inline loading require "ext" parameter')
             filename = kwargs.get('filename')
@@ -546,8 +538,7 @@ class Image(EventDispatcher):
                 filename = '__inline__'
             self.load_memory(arg, ext, filename)
         elif isinstance(arg, string_types):
-            groups = self.data_uri_re.findall(arg)
-            if groups:
+            if groups := self.data_uri_re.findall(arg):
                 self._nocache = True
                 imtype, optstr, data = groups[0]
                 options = [o for o in optstr.split(';') if o]
@@ -743,9 +734,7 @@ class Image(EventDispatcher):
                 self._texture = None
             return
         else:
-            # if we already got a texture, it will be automatically reloaded.
-            _texture = Cache.get('kv.texture', uid)
-            if _texture:
+            if _texture := Cache.get('kv.texture', uid):
                 self._texture = _texture
                 return
 
@@ -777,7 +766,7 @@ class Image(EventDispatcher):
                    loader.can_load_memory() and
                    ext in loader.extensions()]
         if not loaders:
-            raise Exception('No inline loader found to load {}'.format(ext))
+            raise Exception(f'No inline loader found to load {ext}')
         image = loaders[0](filename, ext=ext, rawdata=data, inline=True,
                 nocache=self._nocache, mipmap=self._mipmap,
                 keep_data=self._keep_data)
@@ -808,9 +797,8 @@ class Image(EventDispatcher):
     @property
     def texture(self):
         '''Texture of the image'''
-        if self.image:
-            if not self._iteration_done:
-                self._img_iterate()
+        if self.image and not self._iteration_done:
+            self._img_iterate()
         return self._texture
 
     @property

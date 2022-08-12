@@ -1,5 +1,6 @@
 '''Pygments lexer for kv language
 '''
+
 from pygments.lexer import RegexLexer, bygroups, using
 from pygments.lexers.agile import PythonLexer
 from pygments import highlight
@@ -44,8 +45,7 @@ if __name__ == '__main__':
     argument is the output filename
     '''
     if len(sys.argv) != 4:
-        raise Exception('Three arguments expected, found %s' %
-            (len(sys.argv) - 1))
+        raise Exception(f'Three arguments expected, found {len(sys.argv) - 1}')
     k = KivyLexer()
     with open(sys.argv[1], 'r') as fd:
         with open(sys.argv[3], 'w') as out:

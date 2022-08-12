@@ -97,6 +97,7 @@ You can also simulate an alternative user preference for fontscale as follows::
 '''
 
 
+
 from os import environ
 from kivy.utils import platform
 from kivy.properties import AliasProperty
@@ -119,16 +120,13 @@ if environ.get('KIVY_DOC_INCLUDE', None) == '1':
     _default_dpi = 132.
     _default_density = 1
 else:
-    _custom_dpi = environ.get('KIVY_DPI')
-    if _custom_dpi:
+    if _custom_dpi := environ.get('KIVY_DPI'):
         _default_dpi = float(_custom_dpi)
 
-    _custom_density = environ.get('KIVY_METRICS_DENSITY')
-    if _custom_density:
+    if _custom_density := environ.get('KIVY_METRICS_DENSITY'):
         _default_density = float(_custom_density)
 
-    _custom_fontscale = environ.get('KIVY_METRICS_FONTSCALE')
-    if _custom_fontscale:
+    if _custom_fontscale := environ.get('KIVY_METRICS_FONTSCALE'):
         _default_fontscale = float(_custom_fontscale)
 
 

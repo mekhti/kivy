@@ -94,9 +94,7 @@ def register_context(name, cls, *args, **kwargs):
 def get_current_context():
     '''Return the current context.
     '''
-    if not _context_stack:
-        return _default_context
-    return _context_stack[-1]
+    return _context_stack[-1] if _context_stack else _default_context
 
 
 _default_context = Context(init=False)

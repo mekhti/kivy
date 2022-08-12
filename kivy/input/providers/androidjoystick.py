@@ -96,7 +96,6 @@ class AndroidMotionEventProvider(MotionEventProvider):
                                             [x, y, pressure, radius])
                     touches[jid] = touch
                     dispatch_fn('begin', touch)
-                # update touch
                 elif pressed:
                     touch = touches[jid]
                     # avoid same touch position
@@ -105,8 +104,7 @@ class AndroidMotionEventProvider(MotionEventProvider):
                         continue
                     touch.move([x, y, pressure, radius])
                     dispatch_fn('update', touch)
-                # disappear
-                elif not pressed and jid in touches:
+                elif jid in touches:
                     touch = touches[jid]
                     touch.move([x, y, pressure, radius])
                     touch.update_time_end()

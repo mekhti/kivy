@@ -60,7 +60,7 @@ class WindowPygame(WindowBase):
         # on window / macosx, the opengl context is lost, and we need to
         # reconstruct everything. Check #168 for a state of the work.
         if platform in ('linux', 'macosx', 'win') and \
-                Config.getboolean('graphics', 'resizable'):
+                    Config.getboolean('graphics', 'resizable'):
             self.flags |= pygame.RESIZABLE
 
         try:
@@ -132,7 +132,7 @@ class WindowPygame(WindowBase):
                     logo_size = 512
                 elif platform == 'win':
                     logo_size = 64
-                filename_icon = 'kivy-icon-{}.png'.format(logo_size)
+                filename_icon = f'kivy-icon-{logo_size}.png'
                 filename_icon = resource_find(
                         join(kivy_data_dir, 'logo', filename_icon))
             self.set_icon(filename_icon)
@@ -143,22 +143,21 @@ class WindowPygame(WindowBase):
         try:
             self._pygame_set_mode()
         except pygame.error as e:
-            if multisamples:
-                Logger.warning('WinPygame: Video: failed (multisamples=%d)' %
-                               multisamples)
-                Logger.warning('WinPygame: trying without antialiasing')
-                pygame.display.gl_set_attribute(
-                    pygame.GL_MULTISAMPLEBUFFERS, 0)
-                pygame.display.gl_set_attribute(
-                    pygame.GL_MULTISAMPLESAMPLES, 0)
-                multisamples = 0
-                try:
-                    self._pygame_set_mode()
-                except pygame.error as e:
-                    raise CoreCriticalException(e.message)
-            else:
+            if not multisamples:
                 raise CoreCriticalException(e.message)
 
+            Logger.warning('WinPygame: Video: failed (multisamples=%d)' %
+                           multisamples)
+            Logger.warning('WinPygame: trying without antialiasing')
+            pygame.display.gl_set_attribute(
+                pygame.GL_MULTISAMPLEBUFFERS, 0)
+            pygame.display.gl_set_attribute(
+                pygame.GL_MULTISAMPLESAMPLES, 0)
+            multisamples = 0
+            try:
+                self._pygame_set_mode()
+            except pygame.error as e:
+                raise CoreCriticalException(e.message)
         if pygame.RESIZABLE & self.flags:
             self._pygame_set_mode()
 
@@ -168,7 +167,7 @@ class WindowPygame(WindowBase):
 
         # in order to debug futur issue with pygame/display, let's show
         # more debug output.
-        Logger.debug('Window: Display driver ' + pygame.display.get_driver())
+        Logger.debug(f'Window: Display driver {pygame.display.get_driver()}')
         Logger.debug('Window: Actual window size: %dx%d',
                      info.current_w, info.current_h)
         if platform != 'android':
@@ -241,7 +240,7 @@ class WindowPygame(WindowBase):
     def _set_icon_win(self, filename):
         # ensure the window ico is ended by ico
         if not filename.endswith('.ico'):
-            filename = '{}.ico'.format(filename.rsplit('.', 1)[0])
+            filename = f"{filename.rsplit('.', 1)[0]}.ico"
         if not exists(filename):
             return False
 
@@ -277,7 +276,7 @@ class WindowPygame(WindowBase):
         data = bytes(bytearray(data))
         surface = pygame.image.fromstring(data, (width, height), 'RGBA', True)
         pygame.image.save(surface, filename)
-        Logger.debug('Window: Screenshot saved at <%s>' % filename)
+        Logger.debug(f'Window: Screenshot saved at <{filename}>')
         return filename
 
     def flip(self):
@@ -392,8 +391,8 @@ class WindowPygame(WindowBase):
 
             # drop file (pygame patch needed)
             elif event.type == pygame.USEREVENT and \
-                    hasattr(pygame, 'USEREVENT_DROPFILE') and \
-                    event.code == pygame.USEREVENT_DROPFILE:
+                        hasattr(pygame, 'USEREVENT_DROPFILE') and \
+                        event.code == pygame.USEREVENT_DROPFILE:
                 drop_x, drop_y = pygame.mouse.get_pos()
                 self.dispatch('on_drop_file', event.filename, drop_x, drop_y)
 

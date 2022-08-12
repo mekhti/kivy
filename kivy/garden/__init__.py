@@ -180,9 +180,7 @@ class GardenImporter(object):
                 return self._load_module(fullname, moddir)
 
     def _load_module(self, fullname, moddir):
-        mod = imp.load_module(fullname, None, moddir,
-                              ('', '', imp.PKG_DIRECTORY))
-        return mod
+        return imp.load_module(fullname, None, moddir, ('', '', imp.PKG_DIRECTORY))
 
 
 # insert the garden importer as ultimate importer

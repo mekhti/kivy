@@ -68,5 +68,4 @@ class WeakMethod:
         return s is not None and s == other()
 
     def __repr__(self):
-        return '<WeakMethod proxy={} method={} method_name={}>'.format(
-               self.proxy, self.method, self.method_name)
+        return f'<WeakMethod proxy={self.proxy} method={self.method} method_name={self.method_name}>'

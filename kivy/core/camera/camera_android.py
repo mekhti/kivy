@@ -128,7 +128,7 @@ class CameraAndroid(CameraBase):
 
         with self._buflock:
             self._buffer = None
-        for k in range(2):  # double buffer
+        for _ in range(2):
             buf = b'\x00' * self._bufsize
             self._android_camera.addCallbackBuffer(buf)
         self._android_camera.setPreviewCallbackWithBuffer(self._preview_cb)
@@ -170,10 +170,7 @@ class CameraAndroid(CameraBase):
         Grab current frame (thread-safe, minimal overhead)
         """
         with self._buflock:
-            if self._buffer is None:
-                return None
-            buf = self._buffer.tostring()
-            return buf
+            return None if self._buffer is None else self._buffer.tostring()
 
     def decode_frame(self, buf):
         """

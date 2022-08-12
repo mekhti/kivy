@@ -30,8 +30,7 @@ class ClipboardGtk3(ClipboardBase):
     def get(self, mimetype='text/plain;charset=utf-8'):
         self.init()
         if mimetype == 'text/plain;charset=utf-8':
-            contents = clipboard.wait_for_text()
-            if contents:
+            if contents := clipboard.wait_for_text():
                 return contents
         return ''
 

@@ -40,10 +40,7 @@ class InputPostprocTripleTap(object):
         must be be within the bounds specified. Additionally, the touch profile
         must be the same kind of touch.
         '''
-        ref_button = None
-        if 'button' in ref.profile:
-            ref_button = ref.button
-
+        ref_button = ref.button if 'button' in ref.profile else None
         for touchid in self.touches:
             if ref.uid == touchid:
                 continue
@@ -77,8 +74,7 @@ class InputPostprocTripleTap(object):
             if not touch.is_touch:
                 continue
             if etype == 'begin':
-                triple_tap = self.find_triple_tap(touch)
-                if triple_tap:
+                if triple_tap := self.find_triple_tap(touch):
                     touch.is_double_tap = False
                     touch.is_triple_tap = True
                     tap_time = touch.time_start - triple_tap.time_start

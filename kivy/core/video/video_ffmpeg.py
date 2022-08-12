@@ -91,14 +91,10 @@ class VideoFFMpeg(VideoBase):
             self.dispatch('on_frame')
 
     def _get_duration(self):
-        if self._player is None:
-            return 0
-        return self._player.get_duration()
+        return 0 if self._player is None else self._player.get_duration()
 
     def _get_position(self):
-        if self._player is None:
-            return 0
-        return self._player.get_position()
+        return 0 if self._player is None else self._player.get_position()
 
     def _set_volume(self, value):
         self._volume = value

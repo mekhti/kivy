@@ -9,6 +9,7 @@ This player is the preferred player, using Gstreamer 1.0, working on both
 Python 2 and 3.
 '''
 
+
 try:
     from kivy.lib.gstplayer import GstPlayer, get_gst_version
 except ImportError:
@@ -31,8 +32,9 @@ if PY2:
 else:
     from urllib.request import pathname2url
 
-Logger.info('VideoGstplayer: Using Gstreamer {}'.format(
-    '.'.join(map(str, get_gst_version()))))
+Logger.info(
+    f"VideoGstplayer: Using Gstreamer {'.'.join(map(str, get_gst_version()))}"
+)
 
 
 def _on_gstplayer_buffer(video, width, height, data):
@@ -46,11 +48,11 @@ def _on_gstplayer_buffer(video, width, height, data):
 
 def _on_gstplayer_message(mtype, message):
     if mtype == 'error':
-        Logger.error('VideoGstplayer: {}'.format(message))
+        Logger.error(f'VideoGstplayer: {message}')
     elif mtype == 'warning':
-        Logger.warning('VideoGstplayer: {}'.format(message))
+        Logger.warning(f'VideoGstplayer: {message}')
     elif mtype == 'info':
-        Logger.info('VideoGstplayer: {}'.format(message))
+        Logger.info(f'VideoGstplayer: {message}')
 
 
 class VideoGstplayer(VideoBase):
@@ -65,7 +67,7 @@ class VideoGstplayer(VideoBase):
         Clock.schedule_once(self._do_eos, 0)
 
     def load(self):
-        Logger.debug('VideoGstplayer: Load <{}>'.format(self._filename))
+        Logger.debug(f'VideoGstplayer: Load <{self._filename}>')
         uri = self._get_uri()
         wk_self = ref(self)
         self.player_callback = partial(_on_gstplayer_buffer, wk_self)
@@ -136,5 +138,5 @@ class VideoGstplayer(VideoBase):
         if not uri:
             return
         if '://' not in uri:
-            uri = 'file:' + pathname2url(realpath(uri))
+            uri = f'file:{pathname2url(realpath(uri))}'
         return uri

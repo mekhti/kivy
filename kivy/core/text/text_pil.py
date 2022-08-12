@@ -22,9 +22,9 @@ class LabelPIL(LabelBase):
         fontsize = int(self.options['font_size'])
         fontname = self.options['font_name_r']
         try:
-            id = '%s.%s' % (text_type(fontname), text_type(fontsize))
+            id = f'{text_type(fontname)}.{text_type(fontsize)}'
         except UnicodeDecodeError:
-            id = '%s.%s' % (fontname, fontsize)
+            id = f'{fontname}.{fontsize}'
 
         if id not in self._cache:
             font = ImageFont.truetype(fontname, fontsize)
@@ -46,7 +46,7 @@ class LabelPIL(LabelBase):
         self._pil_draw = ImageDraw.Draw(self._pil_im)
 
     def _render_text(self, text, x, y):
-        color = tuple([int(c * 255) for c in self.options['color']])
+        color = tuple(int(c * 255) for c in self.options['color'])
         self._pil_draw.text((int(x), int(y)),
                             text, font=self._select_font(), fill=color)
 

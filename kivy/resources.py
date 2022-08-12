@@ -87,7 +87,7 @@ def resource_add_path(path):
     '''
     if path in resource_paths:
         return
-    Logger.debug('Resource: add <%s> in path list' % path)
+    Logger.debug(f'Resource: add <{path}> in path list')
     resource_paths.append(path)
 
 
@@ -98,5 +98,5 @@ def resource_remove_path(path):
     '''
     if path not in resource_paths:
         return
-    Logger.debug('Resource: remove <%s> from path list' % path)
+    Logger.debug(f'Resource: remove <{path}> from path list')
     resource_paths.remove(path)

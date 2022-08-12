@@ -19,7 +19,7 @@ class ImageLoaderDDS(ImageLoaderBase):
         try:
             dds = DDSFile(filename=filename)
         except:
-            Logger.warning('Image: Unable to load image <%s>' % filename)
+            Logger.warning(f'Image: Unable to load image <{filename}>')
             raise
 
         self.filename = filename

@@ -37,12 +37,7 @@ _long_text = ("""Lorem ipsum dolor sit amet, consectetur adipiscing elit. """
 
 class LabelTextSizeTest(App):
     def build(self):
-        z = Label(
-            text=_long_text,
-            text_size=(600, None),
-            line_height=1.5
-        )
-        return z
+        return Label(text=_long_text, text_size=(600, None), line_height=1.5)
 
 
 if __name__ == '__main__':

@@ -232,9 +232,11 @@ class unicode_app(App):
         flist = []
 
         for fdir in fonts_path:
-            for fpath in sorted(os.listdir(fdir)):
-                if fpath.endswith('.ttf'):
-                    flist.append(fpath[:-4])
+            flist.extend(
+                fpath[:-4]
+                for fpath in sorted(os.listdir(fdir))
+                if fpath.endswith('.ttf')
+            )
 
         return sorted(flist)
 

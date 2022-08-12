@@ -170,7 +170,7 @@ class LabelTextureSizeExample(App):
         for content_widget in self.text_content_widgets:
             content_widget.text = _example_title_text
         # initialize words generator
-        self.words = (word for word in _example_text.split())
+        self.words = iter(_example_text.split())
         self.add_word()
 
     def add_word(self, dt=None):
@@ -180,7 +180,7 @@ class LabelTextureSizeExample(App):
             return
 
         for content_widget in self.text_content_widgets:
-            content_widget.text += word + ' '
+            content_widget.text += f'{word} '
 
         pause_time = 0.03 * len(word)
         if word.endswith(','):

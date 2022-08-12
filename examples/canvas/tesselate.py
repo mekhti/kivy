@@ -101,12 +101,12 @@ class ShapeBuilder(FloatLayout):
         if not count:
             return
         ret = tess.tesselate(WINDING_ODD, TYPE_POLYGONS)
-        Logger.info('tesselate: build: tess.tesselate returns {}'.format(ret))
+        Logger.info(f'tesselate: build: tess.tesselate returns {ret}')
         self.canvas.after.clear()
 
         debug = self.ids.debug.state == "down"
-        if debug:
-            with self.canvas.after:
+        with self.canvas.after:
+            if debug:
                 c = 0
                 for vertices, indices in tess.meshes:
                     Color(c, 1, 1, mode="hsv")
@@ -115,26 +115,21 @@ class ShapeBuilder(FloatLayout):
                     for i in range(1, len(vertices) // 4):
                         if i > 0:
                             indices.append(i)
-                        indices.append(i)
-                        indices.append(0)
-                        indices.append(i)
+                        indices.extend((i, 0, i))
                     indices.pop(-1)
                     Mesh(vertices=vertices, indices=indices, mode="lines")
-        else:
-            with self.canvas.after:
+            else:
                 Color(1, 1, 1, 1)
                 for vertices, indices in tess.meshes:
                     Mesh(vertices=vertices, indices=indices,
                          mode="triangle_fan")
 
-        self.ids.status.text = "Shapes: {} - Vertex: {} - Elements: {}".format(
-            count, tess.vertex_count, tess.element_count)
+        self.ids.status.text = f"Shapes: {count} - Vertex: {tess.vertex_count} - Elements: {tess.element_count}"
 
     def reset(self):
         self.shapes = []
         self.shape = []
-        self.ids.status.text = "Shapes: {} - Vertex: {} - Elements: {}".format(
-            0, 0, 0)
+        self.ids.status.text = 'Shapes: 0 - Vertex: 0 - Elements: 0'
         self.canvas.after.clear()
 
 

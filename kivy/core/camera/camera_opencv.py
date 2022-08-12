@@ -37,8 +37,7 @@ try:
             def __getattr__(self, attr):
                 if attr.startswith('cv'):
                     attr = attr[2:]
-                got = getattr(cv, attr)
-                return got
+                return getattr(cv, attr)
 
         hg = Hg()
 
@@ -84,7 +83,7 @@ class CameraOpenCV(CameraBase):
             PROPERTY_HEIGHT = cv.CV_CAP_PROP_FRAME_HEIGHT
             PROPERTY_FPS = cv.CV_CAP_PROP_FPS
 
-        Logger.debug('Using opencv ver.' + str(self.opencvMajorVersion))
+        Logger.debug(f'Using opencv ver.{str(self.opencvMajorVersion)}')
 
         if self.opencvMajorVersion == 1:
             # create the device
@@ -121,7 +120,7 @@ class CameraOpenCV(CameraBase):
             # get fps
             self.fps = self._device.get(PROPERTY_FPS)
 
-        if self.fps == 0 or self.fps == 1:
+        if self.fps in [0, 1]:
             self.fps = 1.0 / 30
         elif self.fps > 1:
             self.fps = 1.0 / self.fps

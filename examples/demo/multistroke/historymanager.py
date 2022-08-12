@@ -196,11 +196,7 @@ class GestureSettingsForm(BoxLayout):
             scrollv.scroll_y = 1
             return
 
-        if PY2:
-            d = r.iteritems
-        else:
-            d = r.items
-
+        d = r.iteritems if PY2 else r.items
         for one in sorted(d(), key=lambda x: x[1]['score'],
                           reverse=True):
             data = one[1]

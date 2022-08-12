@@ -89,50 +89,21 @@ class SvgApp(App):
         self.root = FloatLayout()
         self.root.add_widget(effect)
 
-        if 0:
-            from kivy.graphics import Color, Rectangle
-            wid = Widget(size=Window.size)
-            with wid.canvas:
-                Color(1, 1, 1, 1)
-                Rectangle(size=Window.size)
-            effect.add_widget(wid)
+        # from kivy.uix.image import Image
+        # root.add_widget(Image(source='data/logo/kivy-icon-512.png',
+        #                      size=(800, 600)))
 
-        if 1:
-            # from kivy.uix.image import Image
-            # root.add_widget(Image(source='data/logo/kivy-icon-512.png',
-            #                      size=(800, 600)))
+        filenames = sys.argv[1:]
+        if not filenames:
+            filenames = glob(join(dirname(__file__), '*.svg'))
 
-            filenames = sys.argv[1:]
-            if not filenames:
-                filenames = glob(join(dirname(__file__), '*.svg'))
+        for filename in filenames:
+            svg = SvgWidget(filename)
+            effect.add_widget(svg)
 
-            for filename in filenames:
-                svg = SvgWidget(filename)
-                effect.add_widget(svg)
-
-            effect.add_widget(self.label)
-            svg.scale = 5.
-            svg.center = Window.center
-
-        if 0:
-            wid = Scatter(size=Window.size)
-            from kivy.graphics import Color, Triangle, Rectangle
-            with wid.canvas:
-                Color(0, 0, 0, 1)
-                Rectangle(size=Window.size)
-                Color(1, 1, 1, 1)
-                w, h = Window.size
-                cx, cy = w / 2., h / 2.
-                Triangle(points=[cx - w * 0.25, cy - h * 0.25,
-                                 cx, cy + h * 0.25,
-                                 cx + w * 0.25, cy - h * 0.25])
-            effect.add_widget(wid)
-
-        if 0:
-            from kivy.uix.button import Button
-            from kivy.uix.slider import Slider
-            effect.add_widget(Button(text='Hello World'))
-            effect.add_widget(Slider(pos=(200, 200)))
+        effect.add_widget(self.label)
+        svg.scale = 5.
+        svg.center = Window.center
 
         control_ui = Builder.load_string(smaa_ui)
         self.root.add_widget(control_ui)

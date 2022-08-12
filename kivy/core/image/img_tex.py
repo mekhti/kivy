@@ -33,7 +33,7 @@ class ImageLoaderTex(ImageLoaderBase):
                 raise Exception('Truncated tex data')
 
         except:
-            Logger.warning('Image: Image <%s> is corrupted' % filename)
+            Logger.warning(f'Image: Image <{filename}> is corrupted')
             raise
 
         width, height = info['image_size']

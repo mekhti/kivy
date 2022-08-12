@@ -32,10 +32,7 @@ class TestApp(App):
         animation.start(instance)
 
     def build(self):
-        # create a button, and  attach animate() method as a on_press handler
-        button = Button(size_hint=(None, None), text='plop',
-                        on_press=self.animate)
-        return button
+        return Button(size_hint=(None, None), text='plop', on_press=self.animate)
 
 
 if __name__ == '__main__':

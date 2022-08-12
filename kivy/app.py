@@ -682,19 +682,19 @@ class App(EventDispatcher):
 
             kv_directory = self.kv_directory or default_kv_directory
             clsname = self.__class__.__name__.lower()
-            if (clsname.endswith('app') and
-                    not isfile(join(kv_directory, '%s.kv' % clsname))):
+            if clsname.endswith('app') and not isfile(
+                join(kv_directory, f'{clsname}.kv')
+            ):
                 clsname = clsname[:-3]
-            filename = join(kv_directory, '%s.kv' % clsname)
+            filename = join(kv_directory, f'{clsname}.kv')
 
         # Load KV file
         Logger.debug('App: Loading kv <{0}>'.format(filename))
         rfilename = resource_find(filename)
         if rfilename is None or not exists(rfilename):
-            Logger.debug('App: kv <%s> not found' % filename)
+            Logger.debug(f'App: kv <{filename}> not found')
             return False
-        root = Builder.load_file(rfilename)
-        if root:
+        if root := Builder.load_file(rfilename):
             self.root = root
         return True
 
@@ -711,10 +711,7 @@ class App(EventDispatcher):
     def get_application_icon(self):
         '''Return the icon of the application.
         '''
-        if not resource_find(self.icon):
-            return ''
-        else:
-            return resource_find(self.icon)
+        return resource_find(self.icon) or ''
 
     def get_application_config(self, defaultpath='%(appdir)s/%(appname)s.ini'):
         '''
@@ -819,7 +816,6 @@ class App(EventDispatcher):
                     config = ConfigParser(name='app')
                 self.config = config
                 self.build_config(config)
-                pass
         else:
             Logger.debug('App: First configuration, create <{0}>'.format(
                 filename))
@@ -846,20 +842,20 @@ class App(EventDispatcher):
     def _get_user_data_dir(self):
         # Determine and return the user_data_dir.
         data_dir = ""
-        if platform == 'ios':
-            data_dir = expanduser(join('~/Documents', self.name))
-        elif platform == 'android':
+        if platform == 'android':
             from jnius import autoclass, cast
             PythonActivity = autoclass('org.kivy.android.PythonActivity')
             context = cast('android.content.Context', PythonActivity.mActivity)
             file_p = cast('java.io.File', context.getFilesDir())
             data_dir = file_p.getAbsolutePath()
+        elif platform == 'ios':
+            data_dir = expanduser(join('~/Documents', self.name))
+        elif platform == 'macosx':
+            data_dir = f'~/Library/Application Support/{self.name}'
+            data_dir = expanduser(data_dir)
         elif platform == 'win':
             data_dir = os.path.join(os.environ['APPDATA'], self.name)
-        elif platform == 'macosx':
-            data_dir = '~/Library/Application Support/{}'.format(self.name)
-            data_dir = expanduser(data_dir)
-        else:  # _platform == 'linux' or anything else...:
+        else:
             data_dir = os.environ.get('XDG_CONFIG_HOME', '~/.config')
             data_dir = expanduser(join(data_dir, self.name))
         if not exists(data_dir):
@@ -921,8 +917,7 @@ Context.html#getFilesDir()>`_ is returned.
         if not self.built:
             self.load_config()
             self.load_kv(filename=self.kv_file)
-            root = self.build()
-            if root:
+            if root := self.build():
                 self.root = root
         if self.root:
             if not isinstance(self.root, Widget):
@@ -933,12 +928,10 @@ Context.html#getFilesDir()>`_ is returned.
 
         # Check if the window is already created
         from kivy.base import EventLoop
-        window = EventLoop.window
-        if window:
+        if window := EventLoop.window:
             self._app_window = window
             window.set_title(self.get_application_name())
-            icon = self.get_application_icon()
-            if icon:
+            if icon := self.get_application_icon():
                 window.set_icon(icon)
             self._install_settings_keys(window)
         else:
@@ -1060,10 +1053,7 @@ Context.html#getFilesDir()>`_ is returned.
         '''
         if self._app_settings is None:
             self._app_settings = self.create_settings()
-        displayed = self.display_settings(self._app_settings)
-        if displayed:
-            return True
-        return False
+        return bool(displayed := self.display_settings(self._app_settings))
 
     def display_settings(self, settings):
         '''.. versionadded:: 1.8.0

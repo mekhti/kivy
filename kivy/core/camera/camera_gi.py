@@ -5,6 +5,7 @@ Gi Camera
 Implement CameraBase with Gi / Gstreamer, working on both Python 2 and 3
 '''
 
+
 __all__ = ('CameraGi', )
 
 from gi.repository import Gst
@@ -22,8 +23,10 @@ Gst.init(None)
 version = Gst.version()
 if version < (1, 0, 0, 0):
     raise Exception('Cannot use camera_gi, Gstreamer < 1.0 is not supported.')
-Logger.info('CameraGi: Using Gstreamer {}'.format(
-    '.'.join(['{}'.format(x) for x in Gst.version()])))
+Logger.info(
+    f"CameraGi: Using Gstreamer {'.'.join([f'{x}' for x in Gst.version()])}"
+)
+
 install_gobject_iteration()
 
 

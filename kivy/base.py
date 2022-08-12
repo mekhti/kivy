@@ -345,8 +345,6 @@ class EventLoopBase(EventDispatcher):
                 if r == ExceptionManager.RAISE:
                     stopTouchApp()
                     raise
-                else:
-                    pass
 
     async def async_mainloop(self):
         while not self.quit and self.status == 'started':
@@ -360,9 +358,6 @@ class EventLoopBase(EventDispatcher):
                 if r == ExceptionManager.RAISE:
                     stopTouchApp()
                     raise
-                else:
-                    pass
-
         Logger.info("Window: exiting mainloop and closing.")
         self.close()
 
@@ -490,7 +485,7 @@ def _runTouchApp_prepare(widget=None):
 
     # Instance all configured input
     for key, value in Config.items('input'):
-        Logger.debug('Base: Create provider from %s' % (str(value)))
+        Logger.debug(f'Base: Create provider from {str(value)}')
 
         # split value
         args = str(value).split(',', 1)
@@ -499,12 +494,10 @@ def _runTouchApp_prepare(widget=None):
         provider_id, args = args
         provider = MotionEventFactory.get(provider_id)
         if provider is None:
-            Logger.warning('Base: Unknown <%s> provider' % str(provider_id))
+            Logger.warning(f'Base: Unknown <{str(provider_id)}> provider')
             continue
 
-        # create provider
-        p = provider(key, args)
-        if p:
+        if p := provider(key, args):
             EventLoop.add_input_provider(p, True)
 
     # add postproc modules
@@ -512,9 +505,8 @@ def _runTouchApp_prepare(widget=None):
         EventLoop.add_postproc_module(mod)
 
     # add main widget
-    if widget and EventLoop.window:
-        if widget not in EventLoop.window.children:
-            EventLoop.window.add_widget(widget)
+    if widget and EventLoop.window and widget not in EventLoop.window.children:
+        EventLoop.window.add_widget(widget)
 
     # start event loop
     Logger.info('Base: Start application main loop')

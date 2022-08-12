@@ -449,9 +449,12 @@ class ConfigParser(PythonConfigParser, object):
 
     def _do_callbacks(self, section, key, value):
         for callback, csection, ckey in self._callbacks:
-            if csection is not None and csection != section:
-                continue
-            elif ckey is not None and ckey != key:
+            if (
+                csection is not None
+                and csection != section
+                or ckey is not None
+                and ckey != key
+            ):
                 continue
             callback(section, key, value)
 
@@ -465,8 +468,7 @@ class ConfigParser(PythonConfigParser, object):
 
         '''
         if not isinstance(filename, string_types):
-            raise Exception('Only one filename is accepted ({})'.format(
-                string_types.__name__))
+            raise Exception(f'Only one filename is accepted ({string_types.__name__})')
         self.filename = filename
         # If we try to open directly the configuration file in utf-8,
         # we correctly get the unicode value by default.
@@ -477,8 +479,8 @@ class ConfigParser(PythonConfigParser, object):
         # "get()", but we internally store them in ascii.
         # with codecs.open(filename, 'r', encoding='utf-8') as f:
         #    self.readfp(f)
-        old_vals = {sect: {k: v for k, v in self.items(sect)} for sect in
-                    self.sections()}
+        old_vals = {sect: dict(self.items(sect)) for sect in self.sections()}
+
         PythonConfigParser.read(self, filename)
 
         # when reading new file, sections/keys are only increased, not removed
@@ -515,10 +517,7 @@ class ConfigParser(PythonConfigParser, object):
 
     def get(self, section, option, **kwargs):
         value = PythonConfigParser.get(self, section, option, **kwargs)
-        if PY2:
-            if type(value) is str:
-                return value.decode('utf-8')
-        return value
+        return value.decode('utf-8') if PY2 and type(value) is str else value
 
     def setdefaults(self, section, keyvalues):
         '''Set multiple key-value defaults in a section. keyvalues should be
@@ -541,9 +540,11 @@ class ConfigParser(PythonConfigParser, object):
         '''
         if not self.has_section(section):
             return defaultvalue
-        if not self.has_option(section, option):
-            return defaultvalue
-        return self.get(section, option)
+        return (
+            self.get(section, option)
+            if self.has_option(section, option)
+            else defaultvalue
+        )
 
     def getdefaultint(self, section, option, defaultvalue):
         '''Get the value of an option in the specified section. If not found,
@@ -574,7 +575,7 @@ class ConfigParser(PythonConfigParser, object):
             with open(self.filename, 'w') as fd:
                 PythonConfigParser.write(self, fd)
         except IOError:
-            Logger.exception('Unable to write the config <%s>' % self.filename)
+            Logger.exception(f'Unable to write the config <{self.filename}>')
             return False
         return True
 
@@ -642,8 +643,8 @@ class ConfigParser(PythonConfigParser, object):
             config = ConfigParser._named_configs[name][0]
             if config is not None:
                 config = config()
-                if config is not None:
-                    return config
+            if config is not None:
+                return config
             del ConfigParser._named_configs[name]
         except KeyError:
             return None
@@ -680,8 +681,7 @@ class ConfigParser(PythonConfigParser, object):
         if old_name:  # disconnect this parser from previously connected props
             _, props = configs.get(old_name, (None, []))
             for widget, prop in props:
-                widget = widget()
-                if widget:
+                if widget := widget():
                     widget.property(prop).set_config(None)
             configs[old_name] = (None, props)
 
@@ -696,10 +696,9 @@ class ConfigParser(PythonConfigParser, object):
             return
 
         if config is not None and config() is not None:
-            raise ValueError('A parser named {} already exists'.format(value))
+            raise ValueError(f'A parser named {value} already exists')
         for widget, prop in props:
-            widget = widget()
-            if widget:
+            if widget := widget():
                 widget.property(prop).set_config(self)
         configs[value] = (ref(self), props)
 
@@ -779,15 +778,15 @@ if not environ.get('KIVY_DOC_INCLUDE'):
             # activate native input provider in configuration
             # from 1.0.9, don't activate mactouch by default, or app are
             # unusable.
-            if platform == 'win':
-                Config.setdefault('input', 'wm_touch', 'wm_touch')
-                Config.setdefault('input', 'wm_pen', 'wm_pen')
-            elif platform == 'linux':
+            if platform == 'linux':
                 probesysfs = 'probesysfs'
                 if _is_rpi:
                     probesysfs += ',provider=hidinput'
                 Config.setdefault('input', '%(name)s', probesysfs)
 
+            elif platform == 'win':
+                Config.setdefault('input', 'wm_touch', 'wm_touch')
+                Config.setdefault('input', 'wm_pen', 'wm_pen')
             # input postprocessing configuration
             Config.setdefault('postproc', 'double_tap_distance', '20')
             Config.setdefault('postproc', 'double_tap_time', '250')
@@ -939,17 +938,16 @@ if not environ.get('KIVY_DOC_INCLUDE'):
             try:
                 _, section, name = key.split("_", 2)
             except ValueError:
-                Logger.warning((
-                    "Config: Environ `{}` invalid format, "
-                    "must be KCFG_section_name").format(key))
+                Logger.warning(
+                    f"Config: Environ `{key}` invalid format, must be KCFG_section_name"
+                )
+
                 continue
 
             # extract and check section
             section = section.lower()
             if not Config.has_section(section):
-                Logger.warning(
-                    "Config: Environ `{}`: unknown section `{}`".format(
-                        key, section))
+                Logger.warning(f"Config: Environ `{key}`: unknown section `{section}`")
                 continue
 
             # extract and check the option name
@@ -958,12 +956,12 @@ if not environ.get('KIVY_DOC_INCLUDE'):
                 "kivy", "graphics", "widgets", "postproc", "network"}
             if (section in sections_to_check and
                     not Config.has_option(section, name)):
-                Logger.warning((
-                    "Config: Environ `{}` unknown `{}` "
-                    "option in `{}` section.").format(
-                        key, name, section))
-                # we don't avoid to set an unknown option, because maybe
-                # an external modules or widgets (in garden?) may want to
-                # save its own configuration here.
+                Logger.warning(
+                    f"Config: Environ `{key}` unknown `{name}` option in `{section}` section."
+                )
+
+                            # we don't avoid to set an unknown option, because maybe
+                            # an external modules or widgets (in garden?) may want to
+                            # save its own configuration here.
 
             Config.set(section, name, value)

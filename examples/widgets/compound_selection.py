@@ -18,16 +18,12 @@ class SelectableGrid(FocusBehavior, CompoundSelectionBehavior, GridLayout):
         if super(SelectableGrid, self).keyboard_on_key_down(
                 window, keycode, text, modifiers):
             return True
-        if self.select_with_key_down(window, keycode, text, modifiers):
-            return True
-        return False
+        return bool(self.select_with_key_down(window, keycode, text, modifiers))
 
     def keyboard_on_key_up(self, window, keycode):
         if super(SelectableGrid, self).keyboard_on_key_up(window, keycode):
             return True
-        if self.select_with_key_up(window, keycode):
-            return True
-        return False
+        return bool(self.select_with_key_up(window, keycode))
 
     def goto_node(self, key, last_node, last_node_idx):
         ''' This function is used to go to the node by typing the number
@@ -45,10 +41,11 @@ class SelectableGrid(FocusBehavior, CompoundSelectionBehavior, GridLayout):
         in the reverse order.
         '''
         # start searching after the last selected node
-        if not self.nodes_order_reversed:
-            items = items[last_node_idx + 1:] + items[:last_node_idx + 1]
-        else:
-            items = items[:last_node_idx][::-1] + items[last_node_idx:][::-1]
+        items = (
+            items[:last_node_idx][::-1] + items[last_node_idx:][::-1]
+            if self.nodes_order_reversed
+            else items[last_node_idx + 1 :] + items[: last_node_idx + 1]
+        )
 
         for i, child in items:
             if child.text.startswith(key):

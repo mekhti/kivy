@@ -202,7 +202,7 @@ class RegularShape(BaseShape):
         if edges < 3:
             raise Exception('Not enough edges! (3+ only)')
 
-        color = color or [random() for i in range(3)]
+        color = color or [random() for _ in range(3)]
         rad_edge = (pi * 2) / float(edges)
         r_x = self.width / 2.0
         r_y = self.height / 2.0
@@ -246,7 +246,7 @@ class MeshShape(BaseShape):
     def __init__(self, color=None, **kwargs):
         super(MeshShape, self).__init__(**kwargs)
 
-        color = color or [random() for i in range(3)]
+        color = color or [random() for _ in range(3)]
         min_x = 10000
         min_y = 10000
         max_x = 0
@@ -254,9 +254,8 @@ class MeshShape(BaseShape):
 
         # first point has to be the center of the convex shape's mass,
         # that's where the triangle fan starts from
-        poly = [
-            50, 50, 0, 0, 100, 0, 100, 100, 0, 100
-        ] if not self.poly else self.poly
+        poly = self.poly or [50, 50, 0, 0, 100, 0, 100, 100, 0, 100]
+
 
         # make the polygon smaller to fit 100x100 bounding box
         poly = [round(p / 1.5, 4) for p in poly]
@@ -362,18 +361,14 @@ class Collisions(App):
         '''Dispatched when objects collide, gives back colliding objects
         as a "pair" argument holding their instances.
         '''
-        print('Collision {} x {}'.format(pair[0].name, pair[1].name))
+        print(f'Collision {pair[0].name} x {pair[1].name}')
 
     def build(self):
         # the environment for all 2D shapes
         scene = FloatLayout()
 
         # list of 2D shapes, starting with regular ones
-        shapes = [
-            RegularShape(
-                name='Shape {}'.format(x), edges=x
-            ) for x in range(3, 13)
-        ]
+        shapes = [RegularShape(name=f'Shape {x}', edges=x) for x in range(3, 13)]
 
         shapes.append(MeshShape(name='DefaultMesh'))
         shapes.append(MeshShape(name='Cloud', poly=cloud_poly))

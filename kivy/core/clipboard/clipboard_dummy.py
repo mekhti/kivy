@@ -12,9 +12,7 @@ class ClipboardDummy(ClipboardBase):
 
     def __init__(self):
         super(ClipboardDummy, self).__init__()
-        self._data = dict()
-        self._data['text/plain'] = None
-        self._data['application/data'] = None
+        self._data = {'text/plain': None, 'application/data': None}
 
     def get(self, mimetype='text/plain'):
         return self._data.get(mimetype, None)

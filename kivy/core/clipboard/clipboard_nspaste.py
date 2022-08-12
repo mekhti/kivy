@@ -30,9 +30,7 @@ class ClipboardNSPaste(ClipboardBase):
     def get(self, mimetype='text/plain'):
         pb = self._clipboard
         data = pb.stringForType_('public.utf8-plain-text')
-        if not data:
-            return ""
-        return data.UTF8String()
+        return data.UTF8String() if data else ""
 
     def put(self, data, mimetype='text/plain'):
         pb = self._clipboard

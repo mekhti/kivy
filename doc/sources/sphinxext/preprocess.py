@@ -27,19 +27,19 @@ def is_cython_extension(what, obj):
 
     # test for cython cpdef
     if what in ('attribute', 'method') and hasattr(obj, '__objclass__'):
-        if not re.match('^([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)', doc):
-            return False
-        return True
+        return bool(
+            re.match(
+                '^([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)',
+                doc,
+            )
+        )
+
     # test for cython class
     if what == 'class' and hasattr(obj, '__pyx_vtable__'):
-        if not re.match('^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)', doc):
-            return False
-        return True
+        return bool(re.match('^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)', doc))
     # test for python method in cython class
     if what in ('method', 'function') and obj.__class__ == types.BuiltinFunctionType:
-        if not re.match('^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)', doc):
-            return False
-        return True
+        return bool(re.match('^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)', doc))
 
 def callback_docstring(app, what, name, obj, options, lines):
     if what == 'module':
@@ -96,7 +96,7 @@ def callback_signature(app, what, name, obj, options, signature,
     if is_cython_extension(what, obj):
         try:
             doc = obj.__doc__.split('\n').pop(0)
-            doc = '(%s' % doc.split('(')[1]
+            doc = f"({doc.split('(')[1]}"
             doc = doc.replace('(self, ', '(')
             doc = doc.replace('(self)', '( )')
             return (doc, None)

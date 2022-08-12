@@ -231,8 +231,7 @@ class Animation(EventDispatcher):
     def stop(self, widget):
         '''Stop the animation previously applied to a widget, triggering the
         `on_complete` event.'''
-        props = self._widgets.pop(widget.uid, None)
-        if props:
+        if props := self._widgets.pop(widget.uid, None):
             self.dispatch('on_complete', widget)
         self.cancel(widget)
 
@@ -352,10 +351,7 @@ class Animation(EventDispatcher):
                 anim['time'] += dt
 
             # calculate progression
-            if self._duration:
-                progress = min(1., anim['time'] / self._duration)
-            else:
-                progress = 1
+            progress = min(1., anim['time'] / self._duration) if self._duration else 1
             t = transition(progress)
 
             # apply progression on widget
@@ -372,22 +368,16 @@ class Animation(EventDispatcher):
 
     def _calculate(self, a, b, t):
         _calculate = self._calculate
-        if isinstance(a, list) or isinstance(a, tuple):
-            if isinstance(a, list):
-                tp = list
-            else:
-                tp = tuple
-            return tp([_calculate(a[x], b[x], t) for x in range(len(a))])
+        if isinstance(a, list):
+            return [_calculate(a[x], b[x], t) for x in range(len(a))]
+        elif isinstance(a, tuple):
+            return tuple(_calculate(a[x], b[x], t) for x in range(len(a)))
         elif isinstance(a, dict):
-            d = {}
-            for x in iterkeys(a):
-                if x not in b:
-                    # User requested to animate only part of the dict.
-                    # Copy the rest
-                    d[x] = a[x]
-                else:
-                    d[x] = _calculate(a[x], b[x], t)
-            return d
+            return {
+                x: a[x] if x not in b else _calculate(a[x], b[x], t)
+                for x in iterkeys(a)
+            }
+
         else:
             return (a * (1. - t)) + (b * t)
 
@@ -609,7 +599,7 @@ class AnimationTransition:
         if p < 1:
             return 0.5 * p * p * p
         p -= 2
-        return 0.5 * (p * p * p + 2.0)
+        return 0.5 * (p**2 * p + 2.0)
 
     @staticmethod
     def in_quart(progress):
@@ -632,7 +622,7 @@ class AnimationTransition:
         if p < 1:
             return 0.5 * p * p * p * p
         p -= 2
-        return -0.5 * (p * p * p * p - 2.0)
+        return -0.5 * (p**2 * p * p - 2.0)
 
     @staticmethod
     def in_quint(progress):
@@ -655,7 +645,7 @@ class AnimationTransition:
         if p < 1:
             return 0.5 * p * p * p * p * p
         p -= 2.0
-        return 0.5 * (p * p * p * p * p + 2.0)
+        return 0.5 * (p**2 * p * p * p + 2.0)
 
     @staticmethod
     def in_sine(progress):
@@ -679,17 +669,13 @@ class AnimationTransition:
     def in_expo(progress):
         '''.. image:: images/anim_in_expo.png
         '''
-        if progress == 0:
-            return 0.0
-        return pow(2, 10 * (progress - 1.0))
+        return 0.0 if progress == 0 else pow(2, 10 * (progress - 1.0))
 
     @staticmethod
     def out_expo(progress):
         '''.. image:: images/anim_out_expo.png
         '''
-        if progress == 1.0:
-            return 1.0
-        return -pow(2, -10 * progress) + 1.0
+        return 1.0 if progress == 1.0 else -pow(2, -10 * progress) + 1.0
 
     @staticmethod
     def in_out_expo(progress):
@@ -726,7 +712,7 @@ class AnimationTransition:
         if p < 1:
             return -0.5 * (sqrt(1.0 - p * p) - 1.0)
         p -= 2.0
-        return 0.5 * (sqrt(1.0 - p * p) + 1.0)
+        return 0.5 * (sqrt(1.0 - p**2) + 1.0)
 
     @staticmethod
     def in_elastic(progress):
@@ -747,9 +733,7 @@ class AnimationTransition:
         p = .3
         s = p / 4.0
         q = progress
-        if q == 1:
-            return 1.0
-        return pow(2, -10 * q) * sin((q - s) * (2 * pi) / p) + 1.0
+        return 1.0 if q == 1 else pow(2, -10 * q) * sin((q - s) * (2 * pi) / p) + 1.0
 
     @staticmethod
     def in_out_elastic(progress):
@@ -789,7 +773,7 @@ class AnimationTransition:
         if p < 1:
             return 0.5 * (p * p * ((s + 1.0) * p - s))
         p -= 2.0
-        return 0.5 * (p * p * ((s + 1.0) * p + s) + 2.0)
+        return 0.5 * (p**2 * ((s + 1.0) * p + s) + 2.0)
 
     @staticmethod
     def _out_bounce_internal(t, d):

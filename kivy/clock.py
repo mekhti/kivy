@@ -757,7 +757,7 @@ class ClockBaseBehavior(object):
         t_tot = current - self._duration_ts0
         if t_tot >= 1.:
             self._events_duration = \
-                (t_tot - self._sleep_time) / float(self._duration_count)
+                    (t_tot - self._sleep_time) / float(self._duration_count)
             self._duration_ts0 = current
             self._sleep_time = self._duration_count = 0
 
@@ -1162,8 +1162,9 @@ else:
     _clk = environ.get('KIVY_CLOCK', Config.get('kivy', 'kivy_clock'))
     if _clk not in _classes:
         raise Exception(
-            '{} is not a valid kivy clock. Valid clocks are {}'.format(
-                _clk, sorted(_classes.keys())))
+            f'{_clk} is not a valid kivy clock. Valid clocks are {sorted(_classes.keys())}'
+        )
+
 
     Clock: ClockBase = register_context(
         'Clock', _classes[_clk],

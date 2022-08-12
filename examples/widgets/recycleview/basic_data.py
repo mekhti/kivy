@@ -91,9 +91,12 @@ class Test(BoxLayout):
 
     def populate(self):
         self.rv.data = [
-            {'name.text': ''.join(sample(ascii_lowercase, 6)),
-             'value': str(randint(0, 2000))}
-            for x in range(50)]
+            {
+                'name.text': ''.join(sample(ascii_lowercase, 6)),
+                'value': str(randint(0, 2000)),
+            }
+            for _ in range(50)
+        ]
 
     def sort(self):
         self.rv.data = sorted(self.rv.data, key=lambda x: x['name.text'])

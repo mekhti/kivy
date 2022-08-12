@@ -12,7 +12,7 @@ if "PROFILE" in os.environ:
     s = pstats.Stats("Profile.prof")
     s.sort_stats("time").print_callers()
 else:
-    print("Loading {}".format(filename))
+    print(f"Loading {filename}")
     start = time()
     svg = Svg(filename)
     end = time()
